@@ -38,17 +38,23 @@ function LoginForm() {
     // for a session and then redirects to /dashboard
     const redirectTo = `${window.location.origin}/auth/callback`
 
-    const { error: authError } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: redirectTo },
-    })
+    try {
+      const { error: authError } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: redirectTo },
+      })
 
-    if (authError) {
-      setError(authError.message)
-    } else {
-      setSent(true)
+      if (authError) {
+        setError(authError.message)
+      } else {
+        setSent(true)
+      }
+    } catch (err) {
+      setError('Could not reach authentication server. Check your connection and try again.')
+      console.error('[login] signInWithOtp threw:', err)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   if (sent) {
