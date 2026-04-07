@@ -30,7 +30,7 @@ export async function generateDraft(options: GenerateDraftOptions): Promise<stri
 
   const message = await client.messages.create({
     model: MODELS.GENERATION,
-    max_tokens: 16000,
+    max_tokens: 4096,
     system: systemPrompt,
     messages: [
       {

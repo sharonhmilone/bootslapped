@@ -13,6 +13,10 @@ export interface PromptParts {
 export function buildBriefGenerationPrompt(parts: PromptParts): string {
   const { contextDoc, approvedExamples, rejectedExamples } = parts
 
+  const docContent = contextDoc.content.length > CONTEXT_DOC_PROMPT_LIMIT
+    ? contextDoc.content.slice(0, CONTEXT_DOC_PROMPT_LIMIT) + '\n\n[...truncated for brevity — full doc in context_doc table]'
+    : contextDoc.content
+
   const approvedBlock =
     approvedExamples.length > 0
       ? approvedExamples
@@ -36,7 +40,7 @@ export function buildBriefGenerationPrompt(parts: PromptParts): string {
   return `You are an editorial AI for Bootslapped — a content resource for bootstrapped founders. Your job is to generate content briefs that meet the editorial standard defined in the context document below.
 
 CONTEXT DOCUMENT (version ${contextDoc.version}):
-${contextDoc.content}
+${docContent}
 
 APPROVED BRIEF EXAMPLES (what works):
 ${approvedBlock}
@@ -45,11 +49,21 @@ REJECTED BRIEF EXAMPLES (what to avoid):
 ${rejectedBlock}`
 }
 
+// Cap context doc at 8000 chars for draft/brief prompts. The combined
+// playbook + style guide can be 50k+ chars — passing the full doc blows
+// past Vercel's serverless execution limits. The core editorial guidance
+// (voice, format, structure rules) sits in the first 8k chars of the doc.
+const CONTEXT_DOC_PROMPT_LIMIT = 8000
+
 /**
  * Assembles the draft generation system prompt.
  */
 export function buildDraftGenerationPrompt(parts: PromptParts): string {
   const { contextDoc, approvedExamples } = parts
+
+  const docContent = contextDoc.content.length > CONTEXT_DOC_PROMPT_LIMIT
+    ? contextDoc.content.slice(0, CONTEXT_DOC_PROMPT_LIMIT) + '\n\n[...truncated for brevity — full doc in context_doc table]'
+    : contextDoc.content
 
   const approvedBlock =
     approvedExamples.length > 0
@@ -64,7 +78,7 @@ export function buildDraftGenerationPrompt(parts: PromptParts): string {
   return `You are a writer for Bootslapped. Write to the editorial standard in the context document. Be specific, opinionated, and useful. No hedging, no padding.
 
 CONTEXT DOCUMENT (version ${contextDoc.version}):
-${contextDoc.content}
+${docContent}
 
 APPROVED DRAFT EXAMPLES (match this quality and voice):
 ${approvedBlock}`
