@@ -33,54 +33,103 @@ function CallbackHandler() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    // The @supabase/ssr browser client is configured with:
+    //   flowType: 'pkce'
+    //   detectSessionInUrl: true
+    //
+    // detectSessionInUrl automatically handles:
+    //   - ?code=xxx  → calls exchangeCodeForSession internally
+    //   - #access_token=xxx → sets session from hash
+    //
+    // For ?token_hash=xxx&type=xxx (OTP), we still call verifyOtp manually.
+    // For everything else, we listen to onAuthStateChange for the result.
+
     const supabase = createClient()
+    let settled = false
 
-    async function handleCallback() {
-      // ── PKCE / token_hash flow (query params) ─────────────────────
-      // Used when Supabase project is in PKCE mode
-      const token_hash = searchParams.get('token_hash')
-      const type = searchParams.get('type') as EmailOtpType | null
-
-      if (token_hash && type) {
-        const { error } = await supabase.auth.verifyOtp({ token_hash, type })
-        if (error) {
-          console.error('[auth/callback] verifyOtp error:', error.message)
-          router.replace('/login?error=expired')
-        } else {
-          router.replace('/dashboard')
-        }
-        return
+    function go(path: string) {
+      if (!settled) {
+        settled = true
+        router.replace(path)
       }
-
-      // ── Implicit flow (hash fragment) ──────────────────────────────
-      // Hash fragments never reach the server, so we handle them here.
-      // Supabase appends #access_token=...&refresh_token=...&type=...
-      const hash = window.location.hash
-      if (hash) {
-        const params = new URLSearchParams(hash.substring(1))
-        const access_token = params.get('access_token')
-        const refresh_token = params.get('refresh_token')
-
-        if (access_token && refresh_token) {
-          const { error } = await supabase.auth.setSession({
-            access_token,
-            refresh_token,
-          })
-          if (error) {
-            console.error('[auth/callback] setSession error:', error.message)
-            router.replace('/login?error=auth_callback_error')
-          } else {
-            router.replace('/dashboard')
-          }
-          return
-        }
-      }
-
-      // ── Nothing matched ────────────────────────────────────────────
-      router.replace('/login?error=missing_token')
     }
 
-    handleCallback()
+    // Log what Supabase actually sent back so we can debug
+    console.log('[auth/callback] search:', window.location.search)
+    console.log('[auth/callback] hash:', window.location.hash ? '(has hash)' : '(no hash)')
+
+    // ── Error params forwarded by Supabase ─────────────────────────
+    const supabaseError = searchParams.get('error')
+    if (supabaseError) {
+      console.error('[auth/callback] Supabase error param:', supabaseError, searchParams.get('error_description'))
+      go('/login?error=auth_callback_error')
+      return
+    }
+
+    // ── token_hash flow (PKCE OTP — manual verifyOtp) ─────────────
+    const token_hash = searchParams.get('token_hash')
+    const type = searchParams.get('type') as EmailOtpType | null
+    if (token_hash && type) {
+      supabase.auth.verifyOtp({ token_hash, type }).then(({ error }) => {
+        if (error) {
+          console.error('[auth/callback] verifyOtp error:', error.message)
+          go('/login?error=expired')
+        } else {
+          go('/dashboard')
+        }
+      })
+      return
+    }
+
+    // ── code flow + implicit hash flow (auto-handled by detectSessionInUrl) ─
+    // Subscribe first so we don't miss the event
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[auth/callback] onAuthStateChange:', event)
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+        subscription.unsubscribe()
+        go('/dashboard')
+      }
+    })
+
+    // Also check immediately — detectSessionInUrl may have already fired
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        subscription.unsubscribe()
+        go('/dashboard')
+      }
+    })
+
+    // ── Fallback: hash fragment (older implicit flow) ───────────────
+    const hash = window.location.hash
+    if (hash) {
+      const params = new URLSearchParams(hash.substring(1))
+      const access_token = params.get('access_token')
+      const refresh_token = params.get('refresh_token')
+      if (access_token && refresh_token) {
+        supabase.auth.setSession({ access_token, refresh_token }).then(({ error }) => {
+          if (error) {
+            console.error('[auth/callback] setSession error:', error.message)
+            go('/login?error=auth_callback_error')
+          } else {
+            go('/dashboard')
+          }
+        })
+        return
+      }
+    }
+
+    // ── Timeout: if nothing resolves in 10s, bail ──────────────────
+    const timeout = setTimeout(() => {
+      subscription.unsubscribe()
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        go(session ? '/dashboard' : '/login?error=missing_token')
+      })
+    }, 10000)
+
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeout)
+    }
   }, [router, searchParams])
 
   return <LoadingScreen />
