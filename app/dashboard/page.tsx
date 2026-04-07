@@ -54,11 +54,14 @@ export default function DashboardPage() {
 
   const handleGenerateBriefs = async () => {
     setIsGenerating(true)
+    const savedCount = typeof window !== 'undefined'
+      ? Number(localStorage.getItem('bootslapped:briefCount') ?? '1')
+      : 1
     try {
       await fetch('/api/generate-briefs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ count: 1 }),
+        body: JSON.stringify({ count: savedCount }),
       })
     } catch (error) {
       // Browser extensions can drop the response even when the server

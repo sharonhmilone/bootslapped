@@ -35,7 +35,7 @@ export async function sendSlackNotification(options: NotifyOptions): Promise<voi
 function buildMessage(options: NotifyOptions): string {
   switch (options.event) {
     case 'briefs_generated':
-      return `${options.count ?? 3} new briefs are ready for review.`
+      return `${options.count ?? 1} new brief${(options.count ?? 1) === 1 ? '' : 's'} ready for review.`
 
     case 'brief_approved':
       return `Draft in production: ${options.topic ?? 'untitled'}`

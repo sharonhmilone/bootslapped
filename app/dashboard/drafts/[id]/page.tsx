@@ -70,19 +70,16 @@ export default function DraftReviewPage({ params }: PageProps) {
   const handleDecision = async (decision: Decision, note: string, tags: string[]) => {
     setIsSubmitting(true)
     try {
-      const response = await fetch('/api/decisions', {
+      await fetch('/api/decisions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ item_id: id, decision, note, tags }),
       })
-
-      if (response.ok) {
-        router.push('/dashboard')
-      }
     } catch (error) {
       console.error('Decision failed:', error)
     } finally {
       setIsSubmitting(false)
+      router.push('/dashboard')
     }
   }
 
@@ -101,6 +98,28 @@ export default function DraftReviewPage({ params }: PageProps) {
         <Link href="/dashboard" style={{ color: 'var(--brick)' }}>
           Back to pipeline →
         </Link>
+      </div>
+    )
+  }
+
+  // Draft is still generating — don't show an empty editor
+  if (item.status === 'brief_approved' || item.status === 'draft_pending') {
+    return (
+      <div>
+        <Link href="/dashboard" style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '11px', color: 'var(--ink-muted)', display: 'inline-block', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          ← Pipeline
+        </Link>
+        <div style={{ padding: '48px 0', textAlign: 'center' }}>
+          <p style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '13px', color: 'var(--ink-muted)', marginBottom: '8px' }}>
+            Draft is generating — this usually takes 20–30 seconds.
+          </p>
+          <p style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '12px', color: 'var(--ink-muted)' }}>
+            You&apos;ll get a Slack notification when it&apos;s ready.{' '}
+            <Link href="/dashboard" style={{ color: 'var(--brick)' }}>
+              Back to pipeline →
+            </Link>
+          </p>
+        </div>
       </div>
     )
   }
