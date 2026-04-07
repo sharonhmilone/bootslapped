@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   try {
 
     const body = await request.json().catch(() => ({}))
-    const count = body.count ?? 3
+    const count = body.count ?? 1
 
     // 1. Fetch active context doc
     const { data: contextDoc, error: contextError } = await supabase

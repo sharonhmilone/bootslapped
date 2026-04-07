@@ -66,7 +66,7 @@ export async function GET(request: Request) {
       contextDoc,
       approvedExamples: approvedRes.data ?? [],
       rejectedExamples: rejectedRes.data ?? [],
-      count: 3,
+      count: 1,
     })
 
     const rows = briefs.map((brief) => ({
@@ -88,7 +88,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Failed to save briefs' }, { status: 500 })
     }
 
-    await sendSlackNotification({ event: 'briefs_generated', count: 3 })
+    await sendSlackNotification({ event: 'briefs_generated', count: 1 })
 
     return NextResponse.json({ success: true, items: insertedItems })
   } catch (error) {

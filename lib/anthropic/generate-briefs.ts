@@ -24,12 +24,14 @@ export async function generateBriefs(
 
   const message = await client.messages.create({
     model: MODELS.GENERATION,
-    max_tokens: 32000,
+    max_tokens: 8192,
     system: systemPrompt,
     messages: [
       {
         role: 'user',
-        content: `Generate ${count} distinct content briefs. Each brief must follow the brief template defined in the context document exactly. Every field is required. A brief missing any field is incomplete.
+        content: `Generate ${count} content brief${count === 1 ? '' : 's'}. Each brief must follow the brief template defined in the context document exactly. Every field is required. A brief missing any field is incomplete.
+
+Be concise within each section — every word must earn its place. Aim for 150–250 words per section, not exhaustive lists.
 
 Return as a JSON array with this structure for each brief:
 {

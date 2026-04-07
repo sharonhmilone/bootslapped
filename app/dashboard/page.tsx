@@ -49,7 +49,7 @@ export default function DashboardPage() {
       const response = await fetch('/api/generate-briefs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ count: 3 }),
+        body: JSON.stringify({ count: 1 }),
       })
       if (response.ok) {
         await fetchItems()

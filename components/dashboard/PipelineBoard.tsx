@@ -77,7 +77,7 @@ export function PipelineBoard({
           className="btn-approve"
           style={{ opacity: isGenerating ? 0.6 : 1 }}
         >
-          {isGenerating ? 'Generating...' : 'Generate briefs →'}
+          {isGenerating ? 'Generating...' : 'Generate brief →'}
         </button>
       </div>
 
