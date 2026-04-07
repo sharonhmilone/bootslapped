@@ -24,7 +24,7 @@ export async function generateBriefs(
 
   const message = await client.messages.create({
     model: MODELS.GENERATION,
-    max_tokens: 4096,
+    max_tokens: 32000,
     system: systemPrompt,
     messages: [
       {
