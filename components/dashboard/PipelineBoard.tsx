@@ -12,7 +12,8 @@ interface PipelineBoardProps {
 
 const PIPELINE_COLUMNS: Array<{ label: string; statuses: ContentStatus[] }> = [
   { label: 'Brief review', statuses: ['brief_pending'] },
-  { label: 'Draft review', statuses: ['draft_review', 'revision_requested'] },
+  // brief_approved and draft_pending are transitional — draft is generating
+  { label: 'Draft review', statuses: ['brief_approved', 'draft_pending', 'draft_review', 'revision_requested'] },
   { label: 'Ready to publish', statuses: ['ready_to_publish'] },
 ]
 
