@@ -46,17 +46,20 @@ export default function DashboardPage() {
   const handleGenerateBriefs = async () => {
     setIsGenerating(true)
     try {
-      const response = await fetch('/api/generate-briefs', {
+      await fetch('/api/generate-briefs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ count: 1 }),
       })
-      if (response.ok) {
-        await fetchItems()
-      }
     } catch (error) {
-      console.error('Brief generation failed:', error)
+      // Browser extensions can drop the response even when the server
+      // succeeded — always refresh the board regardless so generated
+      // briefs appear without requiring a manual page reload.
+      console.error('[generate-briefs] fetch error (server may have succeeded):', error)
     } finally {
+      // Always refresh — server-side generation is independent of whether
+      // the browser successfully received the HTTP response.
+      await fetchItems()
       setIsGenerating(false)
     }
   }
