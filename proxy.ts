@@ -25,8 +25,15 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // Refresh session if it exists — MUST happen before any route checks
-  const { data: { user } } = await supabase.auth.getUser()
+  // Refresh session — if this fails (bad env vars, network), fall through
+  // so the rest of the site still loads rather than returning a 500.
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch (err) {
+    console.error('[proxy] supabase.auth.getUser failed:', err)
+  }
 
   const { pathname } = request.nextUrl
 
