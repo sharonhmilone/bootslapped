@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { sendSlackNotification } from '@/lib/slack/notify'
 import { proposeContextDocUpdate } from '@/lib/anthropic/propose-update'
 import { generateArticleSlug, makeSlugUnique } from '@/lib/utils/slug'
@@ -8,6 +8,13 @@ const PROPOSAL_THRESHOLD_DECISIONS = 5
 const PROPOSAL_THRESHOLD_PATTERNS = 3
 
 export async function POST(request: Request) {
+  // Auth check via SSR client (reads session cookie)
+  const authClient = await createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const supabase = createServiceClient()
 
   try {
@@ -93,7 +100,10 @@ export async function POST(request: Request) {
       nextAction = 'draft_generation_triggered'
       fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-draft`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+        },
         body: JSON.stringify({ item_id }),
       }).catch(console.error)
       await sendSlackNotification({ event: 'brief_approved', topic: item.topic })
@@ -103,7 +113,10 @@ export async function POST(request: Request) {
     if (stage === 'draft' && decision === 'revision_requested') {
       fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-draft`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+        },
         body: JSON.stringify({ item_id, revision_note: note }),
       }).catch(console.error)
     }

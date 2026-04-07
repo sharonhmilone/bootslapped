@@ -4,6 +4,12 @@ import { generateDraft } from '@/lib/anthropic/generate-draft'
 import { sendSlackNotification } from '@/lib/slack/notify'
 
 export async function POST(request: Request) {
+  // Internal-only route — called by /api/decisions with CRON_SECRET
+  const authHeader = request.headers.get('Authorization')
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const supabase = createServiceClient()
 
   try {

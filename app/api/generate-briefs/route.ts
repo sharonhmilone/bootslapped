@@ -1,17 +1,19 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { generateBriefs } from '@/lib/anthropic/generate-briefs'
 import { sendSlackNotification } from '@/lib/slack/notify'
 
 export async function POST(request: Request) {
+  // Auth check via SSR client (reads session cookie)
+  const authClient = await createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const supabase = createServiceClient()
 
   try {
-    // Verify auth — service client reads the cookie via headers
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
     const body = await request.json().catch(() => ({}))
     const count = body.count ?? 3
