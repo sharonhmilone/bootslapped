@@ -29,8 +29,10 @@ export async function generateDraft(options: GenerateDraftOptions): Promise<stri
   const client = getAnthropicClient()
 
   const message = await client.messages.create({
-    model: MODELS.GENERATION,
-    max_tokens: 4096,
+    // Haiku used here for speed — Vercel Hobby plan has a 10s function limit.
+    // Upgrade to Pro and switch back to MODELS.GENERATION for full quality.
+    model: MODELS.ANALYSIS,
+    max_tokens: 2048,
     system: systemPrompt,
     messages: [
       {

@@ -3,6 +3,11 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { generateDraft } from '@/lib/anthropic/generate-draft'
 import { sendSlackNotification } from '@/lib/slack/notify'
 
+// Vercel Pro: allows up to 60s execution. Hobby ignores this but it's
+// ready for when you upgrade — switch MODELS.ANALYSIS → MODELS.GENERATION
+// in generate-draft.ts at the same time.
+export const maxDuration = 60
+
 export async function POST(request: Request) {
   // Internal-only route — called by /api/decisions with CRON_SECRET
   const authHeader = request.headers.get('Authorization')

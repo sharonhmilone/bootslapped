@@ -3,6 +3,8 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { generateBriefs } from '@/lib/anthropic/generate-briefs'
 import { sendSlackNotification } from '@/lib/slack/notify'
 
+export const maxDuration = 60
+
 export async function POST(request: Request) {
   // Auth check via SSR client (reads session cookie)
   const authClient = await createClient()
