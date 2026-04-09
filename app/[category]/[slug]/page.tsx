@@ -105,7 +105,7 @@ function renderBody(
               key={`${i}-${j}-h2`}
               style={{
                 fontFamily: 'var(--font-barlow-condensed, sans-serif)',
-                fontSize: '28px',
+                fontSize: '32px',
                 fontWeight: 700,
                 color: 'var(--bone)',
                 margin: '40px 0 14px',
@@ -253,17 +253,11 @@ export default async function ArticlePage({
                 flexWrap: 'wrap',
               }}
             >
+              {/* Format label · read time — matches HTML design. Date omitted
+                  (not in HTML design; add back when needed for archives). */}
+              <span>{article.format.charAt(0).toUpperCase() + article.format.slice(1)}</span>
+              {readingTime && <span>·</span>}
               {readingTime && <span>{readingTime} min read</span>}
-              {readingTime && article.published_at && <span>·</span>}
-              {article.published_at && (
-                <span>
-                  {new Date(article.published_at).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </span>
-              )}
             </div>
           </div>
         </header>

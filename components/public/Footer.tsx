@@ -58,7 +58,7 @@ export function Footer() {
             <p
               className="label-text"
               style={{
-                color: 'rgba(240,237,230,0.35)',
+                color: 'var(--dust)',
                 marginBottom: '16px',
                 letterSpacing: '0.12em',
               }}
@@ -91,7 +91,7 @@ export function Footer() {
             <p
               className="label-text"
               style={{
-                color: 'rgba(240,237,230,0.35)',
+                color: 'var(--dust)',
                 marginBottom: '16px',
                 letterSpacing: '0.12em',
               }}
@@ -117,7 +117,7 @@ export function Footer() {
             <p
               className="label-text"
               style={{
-                color: 'rgba(240,237,230,0.35)',
+                color: 'var(--dust)',
                 marginBottom: '16px',
                 letterSpacing: '0.12em',
               }}
