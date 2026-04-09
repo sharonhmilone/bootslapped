@@ -49,10 +49,19 @@ REJECTED BRIEF EXAMPLES (what to avoid):
 ${rejectedBlock}`
 }
 
-// Cap context doc at 8000 chars for draft/brief prompts. The combined
-// playbook + style guide can be 50k+ chars — passing the full doc blows
-// past Vercel's serverless execution limits. The core editorial guidance
-// (voice, format, structure rules) sits in the first 8k chars of the doc.
+// ─── HOBBY CONSTRAINT — REMOVE ON PRO UPGRADE ────────────────────────────────
+// Context doc is capped at 8000 chars because the full ~50k-char combined
+// playbook + style guide was causing Anthropic calls to exceed Vercel's 10s
+// serverless limit. The first 8k covers core editorial rules well enough for
+// Haiku on Hobby, but Sonnet with the full doc is what this was designed for.
+//
+// ON PRO UPGRADE:
+//   1. Remove CONTEXT_DOC_PROMPT_LIMIT and the truncation logic in both
+//      buildBriefGenerationPrompt and buildDraftGenerationPrompt below.
+//   2. Run one generation, check console.anthropic.com for actual input token
+//      count. The full doc is ~12,500 tokens — well within Sonnet's 200k context.
+//   3. Note the total cost per run and set any limits based on real data.
+// ─────────────────────────────────────────────────────────────────────────────
 const CONTEXT_DOC_PROMPT_LIMIT = 8000
 
 /**
