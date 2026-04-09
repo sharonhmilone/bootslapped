@@ -15,9 +15,8 @@ function renderPromptWithHighlights(prompt: string) {
         <span
           key={i}
           style={{
-            background: 'rgba(74,155,142,0.15)',
-            border: '1px solid rgba(74,155,142,0.3)',
-            padding: '1px 4px',
+            background: 'rgba(255,255,255,0.07)',
+            padding: '1px 5px',
           }}
         >
           {part}
