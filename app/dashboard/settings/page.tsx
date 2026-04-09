@@ -28,6 +28,7 @@ export default function SettingsPage() {
   const [slackOk, setSlackOk] = useState<boolean | null>(null)
   const [anthropicOk, setAnthropicOk] = useState<boolean | null>(null)
   const [cronOk, setCronOk] = useState<boolean | null>(null)
+  const [appUrlOk, setAppUrlOk] = useState<boolean | null>(null)
 
   // Load saved brief count from localStorage on mount
   useEffect(() => {
@@ -43,6 +44,7 @@ export default function SettingsPage() {
         setSlackOk(data.slack_configured ?? false)
         setAnthropicOk(data.anthropic_configured ?? false)
         setCronOk(data.cron_secret_configured ?? false)
+        setAppUrlOk(data.app_url_configured ?? false)
       })
       .catch(() => {
         setSlackOk(false)
@@ -194,7 +196,7 @@ export default function SettingsPage() {
             </div>
           </div>
           <p style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '12px', color: 'var(--ink-muted)', margin: 0 }}>
-            Saved to this browser. Cron job runs Monday 8am UTC automatically using this count.
+            Saved to this browser. Used when you click &quot;Generate brief →&quot; on the pipeline. The cron job uses its own count set in Vercel env vars.
           </p>
         </div>
       </section>
@@ -213,6 +215,7 @@ export default function SettingsPage() {
               { label: 'ANTHROPIC_API_KEY', ok: anthropicOk },
               { label: 'SLACK_WEBHOOK_URL', ok: slackOk },
               { label: 'CRON_SECRET', ok: cronOk },
+              { label: 'NEXT_PUBLIC_APP_URL', ok: appUrlOk },
             ].map(({ label, ok }) => (
               <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '12px', color: 'var(--ink)' }}>

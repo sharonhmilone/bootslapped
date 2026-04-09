@@ -11,5 +11,6 @@ export async function GET() {
     slack_configured: !!process.env.SLACK_WEBHOOK_URL,
     cron_secret_configured: !!process.env.CRON_SECRET,
     anthropic_configured: !!process.env.ANTHROPIC_API_KEY,
+    app_url_configured: !!process.env.NEXT_PUBLIC_APP_URL,
   })
 }

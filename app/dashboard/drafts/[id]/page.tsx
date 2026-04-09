@@ -31,6 +31,7 @@ export default function DraftReviewPage({ params }: PageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isRegenerating, setIsRegenerating] = useState(false)
   const [diffPatterns, setDiffPatterns] = useState<string[]>([])
 
   useEffect(() => {
@@ -64,6 +65,27 @@ export default function DraftReviewPage({ params }: PageProps) {
       console.error('Save failed:', error)
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handleRegenerate = async () => {
+    setIsRegenerating(true)
+    try {
+      const response = await fetch('/api/regenerate-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_id: id }),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        if (data.item) {
+          setItem(data.item)
+        }
+      }
+    } catch (error) {
+      console.error('Regenerate failed:', error)
+    } finally {
+      setIsRegenerating(false)
     }
   }
 
@@ -113,12 +135,25 @@ export default function DraftReviewPage({ params }: PageProps) {
           <p style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '13px', color: 'var(--ink-muted)', marginBottom: '8px' }}>
             Draft is generating — this usually takes 20–30 seconds.
           </p>
-          <p style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '12px', color: 'var(--ink-muted)' }}>
+          <p style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '12px', color: 'var(--ink-muted)', marginBottom: '24px' }}>
             You&apos;ll get a Slack notification when it&apos;s ready.{' '}
             <Link href="/dashboard" style={{ color: 'var(--brick)' }}>
               Back to pipeline →
             </Link>
           </p>
+          <div style={{ borderTop: '1px solid var(--rule)', paddingTop: '24px' }}>
+            <p style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              Stuck? Trigger manually:
+            </p>
+            <button
+              onClick={handleRegenerate}
+              disabled={isRegenerating}
+              className="btn-approve"
+              style={{ opacity: isRegenerating ? 0.6 : 1 }}
+            >
+              {isRegenerating ? 'Generating draft... (up to 30s)' : 'Generate draft now →'}
+            </button>
+          </div>
         </div>
       </div>
     )

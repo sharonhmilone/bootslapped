@@ -96,14 +96,20 @@ export async function POST(request: Request) {
     }
 
     // 5. Trigger draft generation on brief approval
+    // Resolve base URL: prefer NEXT_PUBLIC_APP_URL, fall back to VERCEL_URL (auto-set by Vercel),
+    // then localhost for local dev. This ensures the fetch URL is always valid.
+    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
+      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+
     let nextAction = null
     if (stage === 'brief' && decision === 'approved') {
       nextAction = 'draft_generation_triggered'
-      // Use after() so the fetch is dispatched after the response is sent —
-      // plain fire-and-forget gets killed when the function exits.
+      // Use after() so the fetch is dispatched after the response is sent.
+      // generate-draft runs on Edge runtime (30s on Hobby) so it has time to complete.
+      // Even if this after() is killed at 10s, the Edge function runs independently.
       after(async () => {
         try {
-          await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-draft`, {
+          await fetch(`${baseUrl}/api/generate-draft`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -122,7 +128,7 @@ export async function POST(request: Request) {
     if (stage === 'draft' && decision === 'revision_requested') {
       after(async () => {
         try {
-          await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-draft`, {
+          await fetch(`${baseUrl}/api/generate-draft`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
