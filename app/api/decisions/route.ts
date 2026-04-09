@@ -1,3 +1,4 @@
+import { after } from 'next/server'
 import { NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { sendSlackNotification } from '@/lib/slack/notify'
@@ -98,27 +99,41 @@ export async function POST(request: Request) {
     let nextAction = null
     if (stage === 'brief' && decision === 'approved') {
       nextAction = 'draft_generation_triggered'
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-draft`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.CRON_SECRET}`,
-        },
-        body: JSON.stringify({ item_id }),
-      }).catch(console.error)
+      // Use after() so the fetch is dispatched after the response is sent —
+      // plain fire-and-forget gets killed when the function exits.
+      after(async () => {
+        try {
+          await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-draft`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+            },
+            body: JSON.stringify({ item_id }),
+          })
+        } catch (err) {
+          console.error('[decisions] after() generate-draft fetch failed:', err)
+        }
+      })
       await sendSlackNotification({ event: 'brief_approved', topic: item.topic })
     }
 
     // 6. Trigger revision draft on revision_requested
     if (stage === 'draft' && decision === 'revision_requested') {
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-draft`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.CRON_SECRET}`,
-        },
-        body: JSON.stringify({ item_id, revision_note: note }),
-      }).catch(console.error)
+      after(async () => {
+        try {
+          await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-draft`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+            },
+            body: JSON.stringify({ item_id, revision_note: note }),
+          })
+        } catch (err) {
+          console.error('[decisions] after() revision fetch failed:', err)
+        }
+      })
     }
 
     // 7. Check if we should propose a context doc update
