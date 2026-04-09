@@ -65,7 +65,7 @@ export function buildDraftGenerationPrompt(parts: PromptParts): string {
       ? approvedExamples
           .map(
             (ex, i) =>
-              `EXAMPLE ${i + 1} (approved draft${ex.decision_note ? ` — note: "${ex.decision_note}"` : ''}):\n${ex.content_text.slice(0, 1500)}${ex.content_text.length > 1500 ? '...' : ''}`
+              `EXAMPLE ${i + 1} (approved draft${ex.decision_note ? ` — note: "${ex.decision_note}"` : ''}):\n${ex.content_text}`
           )
           .join('\n\n---\n\n')
       : 'No approved draft examples yet. Write strictly according to the context document standard.'

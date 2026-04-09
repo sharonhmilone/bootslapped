@@ -22,7 +22,7 @@ export async function analyzeDiff(options: AnalyzeDiffOptions): Promise<DiffAnal
 
   const message = await client.messages.create({
     model: MODELS.ANALYSIS,
-    max_tokens: 1024,
+    max_tokens: 2048,
     system: systemPrompt,
     messages: [
       {
@@ -30,10 +30,10 @@ export async function analyzeDiff(options: AnalyzeDiffOptions): Promise<DiffAnal
         content: `An editor revised this draft. Analyze what changed and infer the editorial principles at work. Be specific — not "the editor prefers clarity" but "the editor removes hedging language in opening paragraphs" or "the editor adds a named example wherever a claim is made."
 
 ORIGINAL:
-${originalDraft.slice(0, 3000)}${originalDraft.length > 3000 ? '\n...[truncated]' : ''}
+${originalDraft}
 
 EDITED VERSION:
-${editedDraft.slice(0, 3000)}${editedDraft.length > 3000 ? '\n...[truncated]' : ''}
+${editedDraft}
 
 DIFF SUMMARY:
 ${diff.summary}

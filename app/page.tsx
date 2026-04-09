@@ -26,27 +26,29 @@ async function getLatestArticles(): Promise<ContentItem[]> {
   }
 }
 
+// FAILURE_MODES hrefs: point to category pages until specific articles are published.
+// Once "traffic-no-conversions" etc. are live, swap the href to the exact slug.
 const FAILURE_MODES = [
   {
     id: 'traffic',
     title: 'Traffic but no conversions',
     body: "People land and leave. Your offer, positioning, or page isn't converting. Here's how to figure out which one.",
     cta: 'Read the conversion diagnostic →',
-    href: '/conversion/traffic-no-conversions',
+    href: '/diagnostic',
   },
   {
     id: 'invisible',
     title: "Nobody can find you",
     body: "You're creating content but no one's arriving. SEO, distribution, and channel fit all fail in different ways.",
     cta: 'Read the visibility diagnostic →',
-    href: '/seo/cant-get-found-diagnostic',
+    href: '/diagnostic',
   },
   {
     id: 'churn',
     title: "Leads don't close",
     body: "Interested people who don't buy. The gap is usually trust, specificity, or a mismatch in the offer itself.",
     cta: 'Read the pipeline diagnostic →',
-    href: '/conversion/leads-dont-close-diagnostic',
+    href: '/diagnostic',
   },
 ]
 
