@@ -110,8 +110,9 @@ export async function POST(request: Request) {
     if (stage === 'brief' && decision === 'approved') {
       nextAction = 'draft_generation_triggered'
       // Use after() so the fetch is dispatched after the response is sent.
-      // generate-draft runs on Edge runtime (30s on Hobby) so it has time to complete.
-      // Even if this after() is killed at 10s, the Edge function runs independently.
+      // generate-draft runs as a separate Node.js invocation (maxDuration = 120s).
+      // Even if after() is killed when decisions hits its 30s limit, generate-draft
+      // continues running independently — Vercel isolates each function invocation.
       after(async () => {
         try {
           await fetch(`${baseUrl}/api/generate-draft`, {

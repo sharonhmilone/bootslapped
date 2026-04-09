@@ -12,14 +12,10 @@ export function getAnthropicClient(): Anthropic {
   return _client
 }
 
-// Model constants
-// On Vercel Hobby (10s limit): use DRAFT_HOBBY for draft generation.
-// On Vercel Pro (maxDuration = 60): switch generate-draft.ts to GENERATION.
+// Model constants — Vercel Pro, Node.js runtime
 export const MODELS = {
-  // Primary generation — briefs, context doc proposals
+  // All generation: briefs, drafts, context doc proposals
   GENERATION: 'claude-sonnet-4-6',
-  // Fast draft generation — fits Vercel Hobby 10s limit
-  DRAFT_HOBBY: 'claude-haiku-4-5',
-  // Lightweight tasks — diff analysis, classification
+  // Lightweight tasks: diff analysis, pattern extraction
   ANALYSIS: 'claude-haiku-4-5',
 } as const

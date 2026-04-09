@@ -5,6 +5,9 @@ import { sendSlackNotification } from '@/lib/slack/notify'
 
 // Runs every Monday at 8am UTC via Vercel Cron
 // Protected by CRON_SECRET env var
+// Vercel Pro: 60s covers brief generation (Sonnet, short output)
+export const maxDuration = 60
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {

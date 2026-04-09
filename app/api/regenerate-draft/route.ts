@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       .order('created_at', { ascending: false })
       .limit(3)
 
-    // 5. Generate draft (Haiku ~18s, fits in 30s Edge limit)
+    // 5. Generate draft (Sonnet, Node.js, maxDuration = 120s)
     const draftText = await generateDraft({
       item,
       contextDoc,

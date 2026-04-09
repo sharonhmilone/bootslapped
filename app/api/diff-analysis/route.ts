@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { analyzeDiff } from '@/lib/anthropic/analyze-diff'
 
+// Vercel Pro: 60s for Haiku diff analysis (short input/output, fast)
+export const maxDuration = 60
+
 export async function POST(request: Request) {
   const authClient = await createClient()
   const { data: { user } } = await authClient.auth.getUser()

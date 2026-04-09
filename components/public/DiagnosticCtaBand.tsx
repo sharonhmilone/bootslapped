@@ -62,29 +62,20 @@ export function DiagnosticCtaBand() {
               fontSize: 'clamp(32px, 7vw, 48px)',
               color: 'var(--bone)',
               lineHeight: 1.0,
-              margin: '0 0 24px',
+              margin: 0,
             }}
           >
             It&apos;s time to fix your leaky funnel
           </h2>
-
-          {/* Mobile CTA */}
-          <Link
-            href="/diagnostic"
-            className="btn-inverse"
-            style={{ display: 'inline-block' }}
-          >
-            Take the Diagnostic →
-          </Link>
         </div>
 
-        {/* Right: three steps + desktop CTA */}
+        {/* Right: three steps + single CTA */}
         <div>
           <div style={{ marginBottom: '32px' }}>
             {[
-              { n: '01', text: 'Tell it where you\'re stuck — traffic, leads, or conversions' },
-              { n: '02', text: 'Get a specific diagnosis, not generic advice' },
-              { n: '03', text: 'Walk away with a fix, not a framework' },
+              { n: '01', text: 'Find out where you sit on the growth curve' },
+              { n: '02', text: 'Learn which failure mode is blocking your business' },
+              { n: '03', text: 'Work through the specific fix in an interactive session' },
             ].map((step) => (
               <div
                 key={step.n}
@@ -121,7 +112,6 @@ export function DiagnosticCtaBand() {
             ))}
           </div>
 
-          {/* Desktop CTA */}
           <Link
             href="/diagnostic"
             className="btn-inverse"

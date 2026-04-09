@@ -22,7 +22,7 @@ export async function proposeContextDocUpdate(
 
   const message = await client.messages.create({
     model: MODELS.GENERATION,
-    max_tokens: 512,
+    max_tokens: 1024,
     system: systemPrompt,
     messages: [
       {
