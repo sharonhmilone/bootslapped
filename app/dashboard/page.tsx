@@ -22,7 +22,7 @@ export default function DashboardPage() {
     const { data } = await supabase
       .from('content_items')
       .select('*')
-      .not('status', 'in', '("brief_rejected")')
+      .not('status', 'in', '("brief_rejected","draft_rejected")')
       .order('created_at', { ascending: false })
       .limit(100)
 

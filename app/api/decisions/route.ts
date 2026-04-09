@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     } else {
       if (decision === 'approved') newStatus = 'ready_to_publish'
       else if (decision === 'revision_requested') newStatus = 'revision_requested'
-      else newStatus = 'draft_review' // rejected draft goes back to review queue
+      else newStatus = 'draft_rejected' // terminal — removed from active pipeline
     }
 
     // 3. Build update payload — generate slug on brief approval if not already set

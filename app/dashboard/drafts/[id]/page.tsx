@@ -224,7 +224,7 @@ export default function DraftReviewPage({ params }: PageProps) {
 
         {/* Draft editor (center) */}
         <DraftEditor
-          initialText={item.draft_text ?? ''}
+          initialText={item.edited_draft_text ?? item.draft_text ?? ''}
           onSave={handleSave}
           isSaving={isSaving}
         />

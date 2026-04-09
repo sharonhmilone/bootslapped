@@ -42,6 +42,7 @@ create table if not exists content_items (
                     'brief_rejected',
                     'draft_pending',
                     'draft_review',
+                    'draft_rejected',
                     'revision_requested',
                     'ready_to_publish'
                   )),
