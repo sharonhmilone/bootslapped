@@ -124,8 +124,8 @@ export default function DraftReviewPage({ params }: PageProps) {
     )
   }
 
-  // Draft is still generating — don't show an empty editor
-  if (item.status === 'brief_approved' || item.status === 'draft_pending') {
+  // Draft is generating or a revision is in progress — don't show stale editor
+  if (item.status === 'brief_approved' || item.status === 'draft_pending' || item.status === 'revision_requested') {
     return (
       <div>
         <Link href="/dashboard" style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '11px', color: 'var(--ink-muted)', display: 'inline-block', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
@@ -133,7 +133,9 @@ export default function DraftReviewPage({ params }: PageProps) {
         </Link>
         <div style={{ padding: '48px 0', textAlign: 'center' }}>
           <p style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '13px', color: 'var(--ink-muted)', marginBottom: '8px' }}>
-            Draft is generating — this usually takes 20–30 seconds.
+            {item.status === 'revision_requested'
+              ? 'Revision is generating — this usually takes 30–45 seconds with Sonnet.'
+              : 'Draft is generating — this usually takes 30–45 seconds with Sonnet.'}
           </p>
           <p style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '12px', color: 'var(--ink-muted)', marginBottom: '24px' }}>
             You&apos;ll get a Slack notification when it&apos;s ready.{' '}

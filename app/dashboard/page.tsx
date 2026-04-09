@@ -45,7 +45,7 @@ export default function DashboardPage() {
 
   // Auto-poll every 8s while any item is in a generating state
   useEffect(() => {
-    const generatingStatuses = ['brief_approved', 'draft_pending']
+    const generatingStatuses = ['brief_approved', 'draft_pending', 'revision_requested']
     const hasGenerating = items.some((i) => generatingStatuses.includes(i.status))
     if (!hasGenerating) return
     const interval = setInterval(fetchItems, 8000)

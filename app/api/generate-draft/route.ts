@@ -63,11 +63,13 @@ export async function POST(request: Request) {
       revisionNote: revision_note,
     })
 
-    // 5. Update content item — only schema fields
+    // 5. Update content item — clear edited_draft_text so the new draft
+    // shows in the editor, not a previous round of edits.
     const { data: updatedItem, error: updateError } = await supabase
       .from('content_items')
       .update({
         draft_text: draftText,
+        edited_draft_text: null,
         status: 'draft_review',
         updated_at: new Date().toISOString(),
       })
