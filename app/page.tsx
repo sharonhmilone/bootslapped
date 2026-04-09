@@ -26,29 +26,28 @@ async function getLatestArticles(): Promise<ContentItem[]> {
   }
 }
 
-// FAILURE_MODES hrefs: point to category pages until specific articles are published.
-// Once "traffic-no-conversions" etc. are live, swap the href to the exact slug.
+// Each cell maps to a content category — not a specific article.
 const FAILURE_MODES = [
   {
-    id: 'traffic',
-    title: 'Traffic but no conversions',
-    body: "People land and leave. Your offer, positioning, or page isn't converting. Here's how to figure out which one.",
-    cta: 'Read the conversion diagnostic →',
+    id: 'diagnostic',
+    title: 'I have no idea what\'s wrong',
+    body: 'Diagnose where your marketing is leaking, so nothing can stand in the way of your revenue.',
+    cta: 'Read a diagnostic →',
     href: '/diagnostic',
   },
   {
-    id: 'invisible',
-    title: "Nobody can find you",
-    body: "You're creating content but no one's arriving. SEO, distribution, and channel fit all fail in different ways.",
-    cta: 'Read the visibility diagnostic →',
-    href: '/diagnostic',
+    id: 'guide',
+    title: "Something's broke, and I ain't fixed it",
+    body: "You know what needs doing, you want it done well, and you need guidance through it.",
+    cta: 'Read a guide →',
+    href: '/guide',
   },
   {
-    id: 'churn',
-    title: "Leads don't close",
-    body: "Interested people who don't buy. The gap is usually trust, specificity, or a mismatch in the offer itself.",
-    cta: 'Read the pipeline diagnostic →',
-    href: '/diagnostic',
+    id: 'comparison',
+    title: "It's time for a tool upgrade",
+    body: 'Tool comparisons sorted by the challenge, stage and model of bootstrapped businesses.',
+    cta: 'Compare tools →',
+    href: '/comparison',
   },
 ]
 
