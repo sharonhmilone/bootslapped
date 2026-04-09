@@ -54,7 +54,7 @@ export function DiagnosticCtaBand() {
               marginBottom: '12px',
             }}
           >
-            Not sure where to start
+            Try this GPT · No email required
           </span>
           <h2
             className="font-heading"
@@ -65,7 +65,7 @@ export function DiagnosticCtaBand() {
               margin: '0 0 24px',
             }}
           >
-            Take the free diagnostic
+            It&apos;s time to fix your leaky funnel
           </h2>
 
           {/* Mobile CTA */}
@@ -74,7 +74,7 @@ export function DiagnosticCtaBand() {
             className="btn-inverse"
             style={{ display: 'inline-block' }}
           >
-            Take the diagnostic →
+            Take the Diagnostic →
           </Link>
         </div>
 
@@ -82,9 +82,9 @@ export function DiagnosticCtaBand() {
         <div>
           <div style={{ marginBottom: '32px' }}>
             {[
-              { n: '01', text: 'Answer five questions about your marketing' },
+              { n: '01', text: 'Tell it where you\'re stuck — traffic, leads, or conversions' },
               { n: '02', text: 'Get a specific diagnosis, not generic advice' },
-              { n: '03', text: 'See the fix — tools, copy, next steps' },
+              { n: '03', text: 'Walk away with a fix, not a framework' },
             ].map((step) => (
               <div
                 key={step.n}
@@ -127,7 +127,7 @@ export function DiagnosticCtaBand() {
             className="btn-inverse"
             style={{ display: 'inline-block' }}
           >
-            Take the diagnostic →
+            Take the Diagnostic →
           </Link>
         </div>
       </div>

@@ -4,10 +4,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navLinks = [
-  { label: 'Diagnostic', href: '/diagnostic' },
-  { label: 'Guide', href: '/guide' },
-  { label: 'Comparison', href: '/comparison' },
   { label: 'Tools', href: '/tools' },
+  { label: 'Guides', href: '/guide' },
+  { label: 'Compare', href: '/comparison' },
+  { label: 'Diagnostics', href: '/diagnostic' },
 ]
 
 export function Nav() {
@@ -48,7 +48,7 @@ export function Nav() {
           bootslapped
         </Link>
 
-        {/* Navigation links */}
+        {/* Navigation links + CTA */}
         <div
           style={{
             display: 'flex',
@@ -76,6 +76,21 @@ export function Nav() {
               </Link>
             )
           })}
+
+          <Link
+            href="/diagnostic"
+            className="label-text"
+            style={{
+              marginLeft: '16px',
+              padding: '7px 14px',
+              border: '1px solid var(--brick)',
+              color: 'var(--brick)',
+              lineHeight: 1,
+              transition: 'background-color 0.15s, color 0.15s',
+            }}
+          >
+            Free Diagnostic →
+          </Link>
         </div>
       </nav>
     </header>

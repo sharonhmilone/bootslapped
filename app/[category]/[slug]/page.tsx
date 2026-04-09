@@ -6,10 +6,11 @@ import { CategoryTag } from '@/components/public/CategoryTag'
 import { CitableClaimBlock } from '@/components/public/CitableClaimBlock'
 import { AskAiBlock } from '@/components/public/AskAiBlock'
 import { ToolRecommendationBlock } from '@/components/public/ToolRecommendationBlock'
+import { PlatformTierTable } from '@/components/public/PlatformTierTable'
 import { RelatedArticles } from '@/components/public/RelatedArticles'
 import { DiagnosticCtaBand } from '@/components/public/DiagnosticCtaBand'
 import { createServiceClient } from '@/lib/supabase/server'
-import type { ContentItem, ArticleFormat, Tool } from '@/types'
+import type { ContentItem, ArticleFormat, Tool, PlatformTier } from '@/types'
 
 // ── Data fetching ───────────────────────────────────────────
 
@@ -61,7 +62,7 @@ function renderBody(
   const elements: React.ReactNode[] = []
 
   // Split on block-level markers first, then process remaining text
-  const parts = content.split(/(\[CITABLE_CLAIM\][\s\S]*?\[\/CITABLE_CLAIM\]|\[ASK_AI\][\s\S]*?\[\/ASK_AI\]|\[RECOMMENDED_TOOL\][\s\S]*?\[\/RECOMMENDED_TOOL\])/g)
+  const parts = content.split(/(\[CITABLE_CLAIM\][\s\S]*?\[\/CITABLE_CLAIM\]|\[ASK_AI\][\s\S]*?\[\/ASK_AI\]|\[RECOMMENDED_TOOL\][\s\S]*?\[\/RECOMMENDED_TOOL\]|\[TIER_TABLE\][\s\S]*?\[\/TIER_TABLE\])/g)
 
   parts.forEach((part, i) => {
     if (part.startsWith('[CITABLE_CLAIM]')) {
@@ -70,6 +71,18 @@ function renderBody(
     } else if (part.startsWith('[ASK_AI]')) {
       const prompt = part.replace('[ASK_AI]', '').replace('[/ASK_AI]', '').trim()
       elements.push(<AskAiBlock key={i} prompt={prompt} />)
+    } else if (part.startsWith('[TIER_TABLE]')) {
+      const tableText = part.replace('[TIER_TABLE]', '').replace('[/TIER_TABLE]', '').trim()
+      const tiers = tableText.split('\n').filter(Boolean).flatMap((line) => {
+        const colonIdx = line.indexOf(':')
+        if (colonIdx === -1) return []
+        const label = line.slice(0, colonIdx).trim() as PlatformTier['label']
+        const tools = line.slice(colonIdx + 1).split(',').map((t) => t.trim()).filter(Boolean)
+        return [{ label, tools }]
+      })
+      if (tiers.length > 0) {
+        elements.push(<PlatformTierTable key={i} tiers={tiers} />)
+      }
     } else if (part.startsWith('[RECOMMENDED_TOOL]') && tool) {
       elements.push(
         <ToolRecommendationBlock
@@ -130,7 +143,7 @@ function renderBody(
                 fontFamily: 'var(--font-dm-mono, monospace)',
                 fontSize: '15px',
                 lineHeight: 1.75,
-                color: 'var(--dust)',
+                color: 'rgba(240, 237, 230, 0.92)',
                 margin: '0 0 20px',
               }}
             >
@@ -269,7 +282,7 @@ export default async function ArticlePage({
                 margin: 0,
               }}
             >
-              This article contains affiliate links. If you use them, we may earn a commission — at no cost to you.
+              Some links earn commission — doesn&apos;t change the recommendation
             </p>
           </div>
         )}
@@ -289,7 +302,7 @@ export default async function ArticlePage({
                   category: r.format,
                   title: r.topic,
                   description: r.angle,
-                  topic: r.format.toUpperCase(),
+                  topic: r.format.charAt(0).toUpperCase() + r.format.slice(1),
                 }))}
               />
             </div>

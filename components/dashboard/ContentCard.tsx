@@ -13,7 +13,10 @@ function getDaysOld(dateStr: string): number {
 }
 
 function getDetailHref(item: ContentItem): string {
-  if (['brief_pending', 'brief_approved', 'brief_rejected'].includes(item.status)) {
+  // brief_pending and brief_rejected → brief review page
+  // brief_approved, draft_pending, and all draft statuses → draft page
+  // (brief_approved items are generating — draft page has the manual trigger button)
+  if (item.status === 'brief_pending' || item.status === 'brief_rejected') {
     return `/dashboard/briefs/${item.id}`
   }
   return `/dashboard/drafts/${item.id}`

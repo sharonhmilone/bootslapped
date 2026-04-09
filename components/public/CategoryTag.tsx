@@ -5,9 +5,9 @@ interface CategoryTagProps {
 }
 
 const labels: Record<ArticleFormat, string> = {
-  diagnostic: 'DIAGNOSTIC',
-  guide: 'GUIDE',
-  comparison: 'COMPARISON',
+  diagnostic: 'Diagnostic',
+  guide: 'Guide',
+  comparison: 'Comparison',
 }
 
 export function CategoryTag({ format }: CategoryTagProps) {

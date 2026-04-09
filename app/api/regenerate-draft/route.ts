@@ -3,8 +3,9 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { generateDraft } from '@/lib/anthropic/generate-draft'
 import { sendSlackNotification } from '@/lib/slack/notify'
 
-// Vercel Pro: Node.js runtime with 60s max duration.
-export const maxDuration = 60
+// Vercel Pro: Node.js runtime with 120s max duration.
+// Sonnet with a 28k token context doc needs up to 60s — 120s gives headroom.
+export const maxDuration = 120
 
 export async function POST(request: Request) {
   // Auth check via session cookie — editor only
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 })
     }
 
-    if (!['brief_approved', 'draft_pending', 'draft_review'].includes(item.status)) {
+    if (!['brief_approved', 'draft_pending', 'draft_review', 'revision_requested'].includes(item.status)) {
       return NextResponse.json(
         { error: `Cannot regenerate from status: ${item.status}` },
         { status: 400 }

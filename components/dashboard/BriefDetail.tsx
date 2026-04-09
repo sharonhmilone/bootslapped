@@ -50,15 +50,17 @@ export function BriefDetail({ item }: BriefDetailProps) {
               {item.format}
             </span>
           )}
-          <span
+          {item.brief_text && (
+            <span
               style={{
                 fontFamily: 'var(--font-dm-mono, monospace)',
                 fontSize: '11px',
                 color: 'var(--ink-muted)',
               }}
             >
-              ~1200 words
+              {item.brief_text.trim().split(/\s+/).filter(Boolean).length} word brief
             </span>
+          )}
         </div>
       </div>
 

@@ -126,7 +126,7 @@ export function AskAiBlock({ prompt }: AskAiBlockProps) {
             color: copied ? 'var(--steel-teal)' : undefined,
           }}
         >
-          {copied ? 'Copied ✓' : 'Copy prompt'}
+          {copied ? 'Copied ✓' : 'Copy prompt →'}
         </button>
       </div>
     </div>

@@ -3,9 +3,10 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { generateDraft } from '@/lib/anthropic/generate-draft'
 import { sendSlackNotification } from '@/lib/slack/notify'
 
-// Vercel Pro: Node.js runtime with 60s max duration.
-// Sonnet needs up to 45s for a full draft — this gives comfortable headroom.
-export const maxDuration = 60
+// Vercel Pro: Node.js runtime with 120s max duration.
+// Sonnet with a 28k token context doc needs up to 60s for a full draft.
+// 120s gives comfortable headroom without approaching Vercel Pro's 300s limit.
+export const maxDuration = 120
 
 export async function POST(request: Request) {
   // Internal-only route — called by /api/decisions with CRON_SECRET
