@@ -13,9 +13,7 @@ export interface PromptParts {
 export function buildBriefGenerationPrompt(parts: PromptParts): string {
   const { contextDoc, approvedExamples, rejectedExamples } = parts
 
-  const docContent = contextDoc.content.length > CONTEXT_DOC_PROMPT_LIMIT
-    ? contextDoc.content.slice(0, CONTEXT_DOC_PROMPT_LIMIT) + '\n\n[...truncated for brevity — full doc in context_doc table]'
-    : contextDoc.content
+  const docContent = contextDoc.content
 
   const approvedBlock =
     approvedExamples.length > 0
@@ -49,20 +47,10 @@ REJECTED BRIEF EXAMPLES (what to avoid):
 ${rejectedBlock}`
 }
 
-// ─── HOBBY CONSTRAINT — REMOVE ON PRO UPGRADE ────────────────────────────────
-// Context doc is capped at 8000 chars because the full ~50k-char combined
-// playbook + style guide was causing Anthropic calls to exceed Vercel's 10s
-// serverless limit. The first 8k covers core editorial rules well enough for
-// Haiku on Hobby, but Sonnet with the full doc is what this was designed for.
-//
-// ON PRO UPGRADE:
-//   1. Remove CONTEXT_DOC_PROMPT_LIMIT and the truncation logic in both
-//      buildBriefGenerationPrompt and buildDraftGenerationPrompt below.
-//   2. Run one generation, check console.anthropic.com for actual input token
-//      count. The full doc is ~12,500 tokens — well within Sonnet's 200k context.
-//   3. Note the total cost per run and set any limits based on real data.
-// ─────────────────────────────────────────────────────────────────────────────
-const CONTEXT_DOC_PROMPT_LIMIT = 8000
+// No context doc limit on Pro — full doc sent to Sonnet.
+// Sonnet's context window is 200k tokens; the full editorial doc is ~12,500 tokens.
+// After a few runs, check console.anthropic.com to confirm actual input token
+// counts and cost per generation.
 
 /**
  * Assembles the draft generation system prompt.
@@ -70,9 +58,7 @@ const CONTEXT_DOC_PROMPT_LIMIT = 8000
 export function buildDraftGenerationPrompt(parts: PromptParts): string {
   const { contextDoc, approvedExamples } = parts
 
-  const docContent = contextDoc.content.length > CONTEXT_DOC_PROMPT_LIMIT
-    ? contextDoc.content.slice(0, CONTEXT_DOC_PROMPT_LIMIT) + '\n\n[...truncated for brevity — full doc in context_doc table]'
-    : contextDoc.content
+  const docContent = contextDoc.content
 
   const approvedBlock =
     approvedExamples.length > 0

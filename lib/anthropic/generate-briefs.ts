@@ -33,11 +33,13 @@ export async function generateBriefs(
 
 Be concise within each section — every word must earn its place. Aim for 150–250 words per section, not exhaustive lists.
 
+FORMAT SELECTION — this is critical: Do not default to "diagnostic" for every brief. The three formats (diagnostic, guide, comparison) must be used in genuine rotation based on what serves the topic best. If generating multiple briefs, each must use a different format. If generating 1 brief, choose the format that genuinely fits — and actively avoid defaulting to diagnostic unless the topic specifically calls for it. Comparisons should be used for tool/approach decisions. Guides should be used for process or framework topics. Diagnostics for failure-mode identification.
+
 Return as a JSON array with this structure for each brief:
 {
   "topic": "The specific topic or failure mode being addressed",
   "angle": "The specific editorial angle — what makes this Bootslapped-specific",
-  "format": "diagnostic | guide | comparison",
+  "format": "diagnostic or guide or comparison — one of these three exact strings, chosen intentionally",
   "target_audience": "Who specifically this is for and what stage they're at",
   "brief_text": "The full brief text following the template in the context document"
 }

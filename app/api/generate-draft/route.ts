@@ -3,10 +3,9 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { generateDraft } from '@/lib/anthropic/generate-draft'
 import { sendSlackNotification } from '@/lib/slack/notify'
 
-// Edge runtime gives 30s on Vercel Hobby (vs 10s for Node.js serverless).
-// This is enough for Haiku at 2048 tokens (~18s generation).
-// On Vercel Pro, switch to Node.js runtime and MODELS.GENERATION in generate-draft.ts.
-export const runtime = 'edge'
+// Vercel Pro: Node.js runtime with 60s max duration.
+// Sonnet needs up to 45s for a full draft — this gives comfortable headroom.
+export const maxDuration = 60
 
 export async function POST(request: Request) {
   // Internal-only route — called by /api/decisions with CRON_SECRET

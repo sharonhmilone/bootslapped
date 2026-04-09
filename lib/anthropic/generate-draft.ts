@@ -29,17 +29,12 @@ export async function generateDraft(options: GenerateDraftOptions): Promise<stri
   const client = getAnthropicClient()
 
   const message = await client.messages.create({
-    // ─── HOBBY CONSTRAINTS (remove all three on Pro upgrade) ──────────────────
-    // 1. Model: Haiku is fast enough for Edge 30s. Sonnet is the right model.
-    //    ON PRO: change MODELS.DRAFT_HOBBY → MODELS.GENERATION
-    // 2. max_tokens: 2048 is artificially low. On first Pro run, REMOVE this cap
-    //    entirely (or set 8192) and check console.anthropic.com to see real output
-    //    length and cost. Set the limit based on actual data, not guesswork.
-    // 3. Context doc: prompt-builder.ts truncates to 8k chars. On Pro, remove that
-    //    cap so the full editorial playbook reaches the model.
-    // ─────────────────────────────────────────────────────────────────────────
-    model: MODELS.DRAFT_HOBBY,
-    max_tokens: 2048,
+    // Sonnet on Pro — full quality, no artificial limits.
+    // max_tokens: 8192 is a safety ceiling, not a target. Check console.anthropic.com
+    // after the first few runs to see actual output length and cost per draft,
+    // then adjust if needed based on real data.
+    model: MODELS.GENERATION,
+    max_tokens: 8192,
     system: systemPrompt,
     messages: [
       {

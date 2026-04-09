@@ -3,8 +3,8 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { generateDraft } from '@/lib/anthropic/generate-draft'
 import { sendSlackNotification } from '@/lib/slack/notify'
 
-// Edge runtime — 30s on Vercel Hobby (vs 10s Node.js), enough time for Haiku generation.
-export const runtime = 'edge'
+// Vercel Pro: Node.js runtime with 60s max duration.
+export const maxDuration = 60
 
 export async function POST(request: Request) {
   // Auth check via session cookie — editor only

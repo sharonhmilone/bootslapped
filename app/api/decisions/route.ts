@@ -5,6 +5,11 @@ import { sendSlackNotification } from '@/lib/slack/notify'
 import { proposeContextDocUpdate } from '@/lib/anthropic/propose-update'
 import { generateArticleSlug, makeSlugUnique } from '@/lib/utils/slug'
 
+// 30s gives after() enough time to initiate the generate-draft HTTP call
+// before the function exits. The actual AI generation runs in generate-draft's
+// own 60s window as a separate invocation.
+export const maxDuration = 30
+
 const PROPOSAL_THRESHOLD_DECISIONS = 5
 const PROPOSAL_THRESHOLD_PATTERNS = 3
 
