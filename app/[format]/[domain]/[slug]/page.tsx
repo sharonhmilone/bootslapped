@@ -10,7 +10,18 @@ import { PlatformTierTable } from '@/components/public/PlatformTierTable'
 import { RelatedArticles } from '@/components/public/RelatedArticles'
 import { DiagnosticCtaBand } from '@/components/public/DiagnosticCtaBand'
 import { createServiceClient } from '@/lib/supabase/server'
-import type { ContentItem, ArticleFormat, Tool, PlatformTier } from '@/types'
+import type { ContentItem, ArticleFormat, TopicDomain, Tool, PlatformTier } from '@/types'
+
+const DOMAIN_LABELS: Record<TopicDomain, string> = {
+  email: 'Email',
+  crm: 'CRM',
+  bookkeeping: 'Bookkeeping',
+  website: 'Website',
+  content: 'Content',
+  conversion: 'Conversion',
+  stack: 'Stack',
+  'ai-tools': 'AI Tools',
+}
 
 // ── Data fetching ───────────────────────────────────────────
 
@@ -269,6 +280,15 @@ export default async function ArticlePage({
               }}
             >
               <span>{article.format.charAt(0).toUpperCase() + article.format.slice(1)}</span>
+              {article.topic_domain && <span>·</span>}
+              {article.topic_domain && (
+                <a
+                  href={`/${article.format}/${article.topic_domain}`}
+                  style={{ color: 'inherit', textDecoration: 'none' }}
+                >
+                  {DOMAIN_LABELS[article.topic_domain] ?? article.topic_domain}
+                </a>
+              )}
               {readingTime && <span>·</span>}
               {readingTime && <span>{readingTime} min read</span>}
             </div>

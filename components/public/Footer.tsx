@@ -124,17 +124,25 @@ export function Footer() {
             >
               More
             </p>
-            <p
-              style={{
-                fontFamily: 'var(--font-dm-mono, monospace)',
-                fontSize: '11px',
-                color: 'rgba(240,237,230,0.4)',
-                margin: 0,
-                lineHeight: 1.6,
-              }}
-            >
-              Some links earn commission — doesn&apos;t change the recommendation
-            </p>
+            {[
+              { label: 'About', href: '/about' },
+              { label: 'Affiliate disclosure', href: '/affiliate-disclosure' },
+              { label: 'Privacy', href: '/privacy' },
+            ].map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="label-text"
+                style={{
+                  color: 'var(--dust)',
+                  display: 'block',
+                  marginBottom: '10px',
+                  transition: 'color 0.15s',
+                }}
+              >
+                {link.label} →
+              </Link>
+            ))}
           </div>
         </div>
       </div>
