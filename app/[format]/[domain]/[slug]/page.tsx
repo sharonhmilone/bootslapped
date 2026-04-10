@@ -6,10 +6,22 @@ import { CategoryTag } from '@/components/public/CategoryTag'
 import { CitableClaimBlock } from '@/components/public/CitableClaimBlock'
 import { AskAiBlock } from '@/components/public/AskAiBlock'
 import { ToolRecommendationBlock } from '@/components/public/ToolRecommendationBlock'
+import { PlatformTierTable } from '@/components/public/PlatformTierTable'
 import { RelatedArticles } from '@/components/public/RelatedArticles'
 import { DiagnosticCtaBand } from '@/components/public/DiagnosticCtaBand'
 import { createServiceClient } from '@/lib/supabase/server'
-import type { ContentItem, ArticleFormat, Tool } from '@/types'
+import type { ContentItem, ArticleFormat, TopicDomain, Tool, PlatformTier } from '@/types'
+
+const DOMAIN_LABELS: Record<TopicDomain, string> = {
+  email: 'Email',
+  crm: 'CRM',
+  bookkeeping: 'Bookkeeping',
+  website: 'Website',
+  content: 'Content',
+  conversion: 'Conversion',
+  stack: 'Stack',
+  'ai-tools': 'AI Tools',
+}
 
 // ── Data fetching ───────────────────────────────────────────
 
@@ -31,18 +43,39 @@ async function getArticle(slug: string): Promise<(ContentItem & { tool?: Tool })
   }
 }
 
-async function getRelatedArticles(currentId: string, format: ArticleFormat): Promise<ContentItem[]> {
+async function getRelatedArticles(currentId: string, format: ArticleFormat, domain: string | null): Promise<ContentItem[]> {
   try {
     const supabase = createServiceClient()
-    const { data } = await supabase
+    let query = supabase
       .from('content_items')
-      .select('id, topic, angle, format, slug, published_at')
+      .select('id, topic, angle, format, slug, topic_domain, published_at')
       .eq('status', 'ready_to_publish')
       .eq('format', format)
       .not('slug', 'is', null)
       .neq('id', currentId)
       .order('published_at', { ascending: false })
-      .limit(3)
+
+    // Prefer same domain for related — closer topical match
+    if (domain) {
+      query = query.eq('topic_domain', domain)
+    }
+
+    const { data } = await query.limit(3)
+
+    // If fewer than 3 in same domain, fill from across the format
+    if ((data ?? []).length < 3 && domain) {
+      const existingIds = [currentId, ...(data ?? []).map((r) => r.id)]
+      const { data: fallback } = await supabase
+        .from('content_items')
+        .select('id, topic, angle, format, slug, topic_domain, published_at')
+        .eq('status', 'ready_to_publish')
+        .eq('format', format)
+        .not('slug', 'is', null)
+        .not('id', 'in', `(${existingIds.join(',')})`)
+        .order('published_at', { ascending: false })
+        .limit(3 - (data ?? []).length)
+      return [...(data ?? []), ...(fallback ?? [])] as ContentItem[]
+    }
 
     return (data ?? []) as ContentItem[]
   } catch {
@@ -52,16 +85,13 @@ async function getRelatedArticles(currentId: string, format: ArticleFormat): Pro
 
 // ── Content rendering ───────────────────────────────────────
 
-// Parses the draft_text field which uses [MARKER]...[/MARKER] blocks
-// and renders them as the appropriate React components.
 function renderBody(
   content: string,
   tool?: Tool
 ): React.ReactNode[] {
   const elements: React.ReactNode[] = []
 
-  // Split on block-level markers first, then process remaining text
-  const parts = content.split(/(\[CITABLE_CLAIM\][\s\S]*?\[\/CITABLE_CLAIM\]|\[ASK_AI\][\s\S]*?\[\/ASK_AI\]|\[RECOMMENDED_TOOL\][\s\S]*?\[\/RECOMMENDED_TOOL\])/g)
+  const parts = content.split(/(\[CITABLE_CLAIM\][\s\S]*?\[\/CITABLE_CLAIM\]|\[ASK_AI\][\s\S]*?\[\/ASK_AI\]|\[RECOMMENDED_TOOL\][\s\S]*?\[\/RECOMMENDED_TOOL\]|\[TIER_TABLE\][\s\S]*?\[\/TIER_TABLE\])/g)
 
   parts.forEach((part, i) => {
     if (part.startsWith('[CITABLE_CLAIM]')) {
@@ -70,6 +100,18 @@ function renderBody(
     } else if (part.startsWith('[ASK_AI]')) {
       const prompt = part.replace('[ASK_AI]', '').replace('[/ASK_AI]', '').trim()
       elements.push(<AskAiBlock key={i} prompt={prompt} />)
+    } else if (part.startsWith('[TIER_TABLE]')) {
+      const tableText = part.replace('[TIER_TABLE]', '').replace('[/TIER_TABLE]', '').trim()
+      const tiers = tableText.split('\n').filter(Boolean).flatMap((line) => {
+        const colonIdx = line.indexOf(':')
+        if (colonIdx === -1) return []
+        const label = line.slice(0, colonIdx).trim() as PlatformTier['label']
+        const tools = line.slice(colonIdx + 1).split(',').map((t) => t.trim()).filter(Boolean)
+        return [{ label, tools }]
+      })
+      if (tiers.length > 0) {
+        elements.push(<PlatformTierTable key={i} tiers={tiers} />)
+      }
     } else if (part.startsWith('[RECOMMENDED_TOOL]') && tool) {
       elements.push(
         <ToolRecommendationBlock
@@ -79,20 +121,18 @@ function renderBody(
         />
       )
     } else if (part.trim()) {
-      // Plain text — render paragraphs split by double newlines
       const paragraphs = part.split(/\n\n+/).filter(Boolean)
       paragraphs.forEach((para, j) => {
         const trimmed = para.trim()
         if (!trimmed) return
 
-        // H2: ## heading
         if (trimmed.startsWith('## ')) {
           elements.push(
             <h2
               key={`${i}-${j}-h2`}
               style={{
                 fontFamily: 'var(--font-barlow-condensed, sans-serif)',
-                fontSize: '28px',
+                fontSize: '32px',
                 fontWeight: 700,
                 color: 'var(--bone)',
                 margin: '40px 0 14px',
@@ -102,7 +142,6 @@ function renderBody(
               {trimmed.replace('## ', '')}
             </h2>
           )
-        // H3: ### heading or **bold** standalone line
         } else if (trimmed.startsWith('### ') || (trimmed.startsWith('**') && trimmed.endsWith('**') && !trimmed.slice(2, -2).includes('**'))) {
           const text = trimmed.startsWith('### ')
             ? trimmed.replace('### ', '')
@@ -130,7 +169,7 @@ function renderBody(
                 fontFamily: 'var(--font-dm-mono, monospace)',
                 fontSize: '15px',
                 lineHeight: 1.75,
-                color: 'var(--dust)',
+                color: 'rgba(240, 237, 230, 0.92)',
                 margin: '0 0 20px',
               }}
             >
@@ -150,7 +189,7 @@ function renderBody(
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ category: string; slug: string }>
+  params: Promise<{ format: string; domain: string; slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
   const article = await getArticle(slug)
@@ -172,14 +211,14 @@ export async function generateMetadata({
 export default async function ArticlePage({
   params,
 }: {
-  params: Promise<{ category: string; slug: string }>
+  params: Promise<{ format: string; domain: string; slug: string }>
 }) {
-  const { slug } = await params
+  const { slug, domain } = await params
   const article = await getArticle(slug)
 
   if (!article) notFound()
 
-  const related = await getRelatedArticles(article.id, article.format)
+  const related = await getRelatedArticles(article.id, article.format, domain)
 
   const readingTime = article.draft_text
     ? Math.ceil(article.draft_text.split(/\s+/).length / 200)
@@ -240,17 +279,18 @@ export default async function ArticlePage({
                 flexWrap: 'wrap',
               }}
             >
-              {readingTime && <span>{readingTime} min read</span>}
-              {readingTime && article.published_at && <span>·</span>}
-              {article.published_at && (
-                <span>
-                  {new Date(article.published_at).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </span>
+              <span>{article.format.charAt(0).toUpperCase() + article.format.slice(1)}</span>
+              {article.topic_domain && <span>·</span>}
+              {article.topic_domain && (
+                <a
+                  href={`/${article.format}/${article.topic_domain}`}
+                  style={{ color: 'inherit', textDecoration: 'none' }}
+                >
+                  {DOMAIN_LABELS[article.topic_domain] ?? article.topic_domain}
+                </a>
               )}
+              {readingTime && <span>·</span>}
+              {readingTime && <span>{readingTime} min read</span>}
             </div>
           </div>
         </header>
@@ -269,7 +309,7 @@ export default async function ArticlePage({
                 margin: 0,
               }}
             >
-              This article contains affiliate links. If you use them, we may earn a commission — at no cost to you.
+              Some links earn commission — doesn&apos;t change the recommendation
             </p>
           </div>
         )}
@@ -287,9 +327,10 @@ export default async function ArticlePage({
                 articles={related.map((r) => ({
                   slug: r.slug!,
                   category: r.format,
+                  domain: r.topic_domain ?? domain,
                   title: r.topic,
                   description: r.angle,
-                  topic: r.format.toUpperCase(),
+                  topic: r.format.charAt(0).toUpperCase() + r.format.slice(1),
                 }))}
               />
             </div>

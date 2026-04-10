@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
+
+async function requireAuth() {
+  const authClient = await createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  return user
+}
 
 // GET: Return pending proposals
 export async function GET() {
+  if (!await requireAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const supabase = createServiceClient()
 
   const { data, error } = await supabase
@@ -20,6 +27,7 @@ export async function GET() {
 
 // POST: Approve or reject a proposal
 export async function POST(request: Request) {
+  if (!await requireAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const supabase = createServiceClient()
 
   try {

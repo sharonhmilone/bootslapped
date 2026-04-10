@@ -1,20 +1,24 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { generateBriefs } from '@/lib/anthropic/generate-briefs'
 import { sendSlackNotification } from '@/lib/slack/notify'
 
+export const maxDuration = 60
+
 export async function POST(request: Request) {
+  // Auth check via SSR client (reads session cookie)
+  const authClient = await createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const supabase = createServiceClient()
 
   try {
-    // Verify auth — service client reads the cookie via headers
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
     const body = await request.json().catch(() => ({}))
-    const count = body.count ?? 3
+    const count = body.count ?? 1
 
     // 1. Fetch active context doc
     const { data: contextDoc, error: contextError } = await supabase
@@ -59,6 +63,7 @@ export async function POST(request: Request) {
       topic: brief.topic,
       angle: brief.angle,
       format: brief.format,
+      topic_domain: brief.topic_domain ?? null,  // AI suggestion, editor confirms at draft approval
       target_audience: brief.target_audience,
       brief_text: brief.brief_text,
       status: 'brief_pending',

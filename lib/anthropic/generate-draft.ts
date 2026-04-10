@@ -29,6 +29,10 @@ export async function generateDraft(options: GenerateDraftOptions): Promise<stri
   const client = getAnthropicClient()
 
   const message = await client.messages.create({
+    // Sonnet on Pro — full quality, no artificial limits.
+    // max_tokens: 8192 is a safety ceiling, not a target. Check console.anthropic.com
+    // after the first few runs to see actual output length and cost per draft,
+    // then adjust if needed based on real data.
     model: MODELS.GENERATION,
     max_tokens: 8192,
     system: systemPrompt,
@@ -53,8 +57,9 @@ function buildInitialUserMessage(item: ContentItem): string {
 
 ${item.brief_text}
 
-Target word count: 1200
 Format: ${item.format ?? 'guide'}
+
+Word count: Write to the depth the topic genuinely requires. Do not pad to hit a target. Do not cut when more is needed. Most articles land between 900–1800 words — shorter if the argument is tight, longer if the topic has real complexity. Let the self-review challenge questions in the context document determine whether the draft earns its length.
 
 The draft must include all required article components as defined in the context document: citable claim block and Ask AI block. If the brief nominates a primary recommended tool, include the recommended tool block content. If the brief specifies no primary tool, include the platform tier table content instead.
 

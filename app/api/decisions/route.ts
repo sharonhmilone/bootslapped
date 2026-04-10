@@ -1,18 +1,31 @@
+import { after } from 'next/server'
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { sendSlackNotification } from '@/lib/slack/notify'
 import { proposeContextDocUpdate } from '@/lib/anthropic/propose-update'
 import { generateArticleSlug, makeSlugUnique } from '@/lib/utils/slug'
+
+// 30s gives after() enough time to initiate the generate-draft HTTP call
+// before the function exits. The actual AI generation runs in generate-draft's
+// own 60s window as a separate invocation.
+export const maxDuration = 30
 
 const PROPOSAL_THRESHOLD_DECISIONS = 5
 const PROPOSAL_THRESHOLD_PATTERNS = 3
 
 export async function POST(request: Request) {
+  // Auth check via SSR client (reads session cookie)
+  const authClient = await createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const supabase = createServiceClient()
 
   try {
     const body = await request.json()
-    const { item_id, decision, note, tags } = body
+    const { item_id, decision, note, tags, topic_domain } = body
 
     if (!item_id || !decision) {
       return NextResponse.json({ error: 'item_id and decision are required' }, { status: 400 })
@@ -42,7 +55,7 @@ export async function POST(request: Request) {
     } else {
       if (decision === 'approved') newStatus = 'ready_to_publish'
       else if (decision === 'revision_requested') newStatus = 'revision_requested'
-      else newStatus = 'draft_review' // rejected draft goes back to review queue
+      else newStatus = 'draft_rejected' // terminal — removed from active pipeline
     }
 
     // 3. Build update payload — generate slug on brief approval if not already set
@@ -52,6 +65,11 @@ export async function POST(request: Request) {
       decision_tags: tags ?? null,
       decided_at: now,
       updated_at: now,
+    }
+
+    // Lock topic_domain on draft approval
+    if (stage === 'draft' && decision === 'approved' && topic_domain) {
+      updatePayload.topic_domain = topic_domain
     }
 
     if (stage === 'brief' && decision === 'approved' && !item.slug) {
@@ -88,24 +106,51 @@ export async function POST(request: Request) {
     }
 
     // 5. Trigger draft generation on brief approval
+    // Resolve base URL: prefer NEXT_PUBLIC_APP_URL, fall back to VERCEL_URL (auto-set by Vercel),
+    // then localhost for local dev. This ensures the fetch URL is always valid.
+    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
+      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+
     let nextAction = null
     if (stage === 'brief' && decision === 'approved') {
       nextAction = 'draft_generation_triggered'
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-draft`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ item_id }),
-      }).catch(console.error)
+      // Use after() so the fetch is dispatched after the response is sent.
+      // generate-draft runs as a separate Node.js invocation (maxDuration = 120s).
+      // Even if after() is killed when decisions hits its 30s limit, generate-draft
+      // continues running independently — Vercel isolates each function invocation.
+      after(async () => {
+        try {
+          await fetch(`${baseUrl}/api/generate-draft`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+            },
+            body: JSON.stringify({ item_id }),
+          })
+        } catch (err) {
+          console.error('[decisions] after() generate-draft fetch failed:', err)
+        }
+      })
       await sendSlackNotification({ event: 'brief_approved', topic: item.topic })
     }
 
     // 6. Trigger revision draft on revision_requested
     if (stage === 'draft' && decision === 'revision_requested') {
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-draft`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ item_id, revision_note: note }),
-      }).catch(console.error)
+      after(async () => {
+        try {
+          await fetch(`${baseUrl}/api/generate-draft`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+            },
+            body: JSON.stringify({ item_id, revision_note: note }),
+          })
+        } catch (err) {
+          console.error('[decisions] after() revision fetch failed:', err)
+        }
+      })
     }
 
     // 7. Check if we should propose a context doc update

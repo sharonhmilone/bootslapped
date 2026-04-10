@@ -35,7 +35,7 @@ export async function sendSlackNotification(options: NotifyOptions): Promise<voi
 function buildMessage(options: NotifyOptions): string {
   switch (options.event) {
     case 'briefs_generated':
-      return `${options.count ?? 3} new briefs are ready for review.`
+      return `${options.count ?? 1} new brief${(options.count ?? 1) === 1 ? '' : 's'} ready for review.`
 
     case 'brief_approved':
       return `Draft in production: ${options.topic ?? 'untitled'}`
@@ -48,6 +48,12 @@ function buildMessage(options: NotifyOptions): string {
 
     case 'context_doc_proposal':
       return `New editorial pattern detected. Proposed update to context doc ready for review.`
+
+    case 'article_published':
+      return `Published: ${options.topic ?? 'untitled'} is now live.`
+
+    case 'article_unpublished':
+      return `Unpublished: ${options.topic ?? 'untitled'} has been taken offline.`
 
     default:
       return `Bootslapped system notification`

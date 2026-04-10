@@ -26,10 +26,12 @@ export async function createClient() {
   )
 }
 
-// Service role client — server only, never exposed to browser
+// Service role client — server only, never exposed to browser.
+// Uses ESM import (not require) so it works in both Node.js and Edge runtimes.
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+
 export function createServiceClient() {
-  const { createClient } = require('@supabase/supabase-js')
-  return createClient(
+  return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {

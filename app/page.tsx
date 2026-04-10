@@ -26,35 +26,36 @@ async function getLatestArticles(): Promise<ContentItem[]> {
   }
 }
 
+// Each cell maps to a content category — not a specific article.
 const FAILURE_MODES = [
   {
-    id: 'traffic',
-    title: 'Getting traffic, no conversions',
-    body: "People land and bounce. Your offer, positioning, or page isn't doing the job. Here's how to diagnose which.",
-    cta: 'Read the conversion diagnostic →',
-    href: '/conversion/traffic-no-conversions',
+    id: 'diagnostic',
+    title: 'I have no idea what\'s wrong',
+    body: 'Diagnose where your marketing is leaking, so nothing can stand in the way of your revenue.',
+    cta: 'Read a diagnostic →',
+    href: '/diagnostic',
   },
   {
-    id: 'invisible',
-    title: "Can't get found at all",
-    body: "You're publishing but nobody's arriving. SEO, distribution, and channel selection all fail differently.",
-    cta: 'Read the visibility diagnostic →',
-    href: '/seo/cant-get-found-diagnostic',
+    id: 'guide',
+    title: "Something's broke, and I ain't fixed it",
+    body: "You know what needs doing, you want it done well, and you need guidance through it.",
+    cta: 'Read a guide →',
+    href: '/guide',
   },
   {
-    id: 'churn',
-    title: "Leads come in, nothing closes",
-    body: 'Interest without purchase. The gap is usually in trust, specificity, or the offer itself.',
-    cta: 'Read the pipeline diagnostic →',
-    href: '/conversion/leads-dont-close-diagnostic',
+    id: 'comparison',
+    title: "It's time for a tool upgrade",
+    body: 'Tool comparisons sorted by the challenge, stage and model of bootstrapped businesses.',
+    cta: 'Compare tools →',
+    href: '/comparison',
   },
 ]
 
 // Format label for article rail
 const FORMAT_LABELS: Record<ArticleFormat, string> = {
-  diagnostic: 'DIAGNOSTIC',
-  guide: 'GUIDE',
-  comparison: 'COMPARISON',
+  diagnostic: 'Diagnostic',
+  guide: 'Guide',
+  comparison: 'Comparison',
 }
 
 export default async function HomePage() {
@@ -70,25 +71,35 @@ export default async function HomePage() {
           <div className="hero-inner">
             {/* Left: headline + CTAs */}
             <div>
+              <p
+                className="label-text"
+                style={{
+                  color: 'var(--dust)',
+                  marginBottom: '16px',
+                  opacity: 0.7,
+                  letterSpacing: '0.1em',
+                }}
+              >
+                Marketing resource for bootstrapped founders
+              </p>
+
               <h1 className="hero-headline">
                 Your marketing is{' '}
-                <span style={{ color: 'var(--brick)' }}>broken</span>.
-                <br />
-                Figure out why.
+                <span style={{ color: 'var(--brick)' }}>broken</span>
               </h1>
 
               <p className="hero-body">
                 Bootslapped is a diagnostic resource for bootstrapped founders.
-                Not more tactics. Frameworks for identifying exactly what's
+                Not more tactics — frameworks for finding exactly what&apos;s
                 failing and what to fix first.
               </p>
 
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                 <a href="/diagnostic" className="btn-primary">
-                  Take the diagnostic →
+                  Take the Diagnostic →
                 </a>
                 <a href="/tools" className="btn-ghost">
-                  Browse tools →
+                  Browse tools
                 </a>
               </div>
             </div>
@@ -97,12 +108,12 @@ export default async function HomePage() {
             {articles.length > 0 && (
               <aside className="hero-aside">
                 <p className="label-text" style={{ marginBottom: '16px', opacity: 0.6 }}>
-                  Recent
+                  Featured
                 </p>
                 {articles.slice(0, 3).map((article) => (
                   <a
                     key={article.id}
-                    href={`/${article.format}/${article.slug}`}
+                    href={article.topic_domain ? `/${article.format}/${article.topic_domain}/${article.slug}` : `/${article.format}/${article.slug}`}
                     className="hero-aside-link"
                   >
                     <span className="label-text" style={{ color: 'var(--brick)', display: 'block', marginBottom: '4px' }}>
@@ -121,9 +132,17 @@ export default async function HomePage() {
         {/* ── Failure mode selector ─────────────────────────── */}
         <section style={{ borderBottom: '1px solid var(--ash)', padding: '56px 0' }}>
           <div className="content-wide">
-            <p className="label-text" style={{ marginBottom: '24px', opacity: 0.6 }}>
-              What's failing?
-            </p>
+            <h2
+              className="font-heading"
+              style={{
+                fontSize: 'clamp(28px, 5vw, 48px)',
+                color: 'var(--bone)',
+                margin: '0 0 32px',
+                lineHeight: 1.05,
+              }}
+            >
+              What&apos;s the problem?
+            </h2>
             <div className="failure-grid">
               {FAILURE_MODES.map((mode, i) => (
                 <a
@@ -151,7 +170,7 @@ export default async function HomePage() {
           <section style={{ borderBottom: '1px solid var(--ash)', padding: '56px 0' }}>
             <div className="content-wide">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: '1px solid var(--ash)', paddingBottom: '12px' }}>
-                <span className="label-text" style={{ opacity: 0.6 }}>All articles</span>
+                <span className="label-text" style={{ opacity: 0.6 }}>Latest</span>
                 <a href="/articles" style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '11px', color: 'var(--dust)', textDecoration: 'none', letterSpacing: '0.05em' }}>
                   View all →
                 </a>
@@ -164,7 +183,7 @@ export default async function HomePage() {
                   title={article.topic}
                   description={article.angle}
                   topic={FORMAT_LABELS[article.format]}
-                  href={`/${article.format}/${article.slug}`}
+                  href={article.topic_domain ? `/${article.format}/${article.topic_domain}/${article.slug}` : `/${article.format}/${article.slug}`}
                 />
               ))}
             </div>

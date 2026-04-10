@@ -13,10 +13,23 @@ export type ContentStatus =
   | 'brief_rejected'
   | 'draft_pending'
   | 'draft_review'
+  | 'draft_rejected'
   | 'revision_requested'
   | 'ready_to_publish'
 
 export type ArticleFormat = 'diagnostic' | 'guide' | 'comparison'
+
+// Eight locked topic domains — set by editor at draft approval, enforced by DB CHECK constraint.
+// AI suggests at brief generation; human confirms before publishing.
+export type TopicDomain =
+  | 'email'
+  | 'crm'
+  | 'bookkeeping'
+  | 'website'
+  | 'content'
+  | 'conversion'
+  | 'stack'
+  | 'ai-tools'
 
 export type ProposalStatus = 'pending' | 'approved' | 'rejected'
 
@@ -30,6 +43,7 @@ export interface ContentItem {
   // Pipeline
   status: ContentStatus
   format: ArticleFormat
+  topic_domain: TopicDomain | null  // null until confirmed at draft approval
 
   // Brief fields
   topic: string
@@ -211,6 +225,27 @@ export interface StaleItem {
   daysStalled: number
 }
 
+// ---- Affiliate program types ----
+
+export type CommissionType = 'percentage' | 'flat' | 'recurring'
+export type EnrollmentStatus = 'not_enrolled' | 'applied' | 'active' | 'paused'
+
+export interface AffiliateProgram {
+  id: string
+  created_at: string
+  updated_at: string
+  program_name: string
+  tool_id: string | null
+  topic_domain: TopicDomain
+  commission_type: CommissionType
+  commission_rate: string | null  // freeform label e.g. "30%" or "$25/referral"
+  signup_url: string | null
+  enrollment_status: EnrollmentStatus
+  notes: string | null
+  // Joined
+  tool?: Tool | null
+}
+
 // ---- Slack notification types ----
 
 export type SlackEventType =
@@ -219,6 +254,8 @@ export type SlackEventType =
   | 'draft_ready'
   | 'item_stalled'
   | 'context_doc_proposal'
+  | 'article_published'
+  | 'article_unpublished'
 
 export interface SlackNotificationPayload {
   event: SlackEventType
@@ -233,6 +270,7 @@ export interface GeneratedBrief {
   topic: string
   angle: string
   format: ArticleFormat
+  topic_domain: TopicDomain  // AI suggestion — editor confirms at draft approval
   target_audience: string
   brief_text: string
 }

@@ -45,28 +45,30 @@ export function Footer() {
         {/* Ruled divider */}
         <div style={{ borderTop: '1px solid var(--ash)', margin: '24px 0' }} />
 
-        {/* Footer links + disclosure */}
+        {/* 3-column footer nav */}
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            flexWrap: 'wrap',
-            gap: '16px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '32px',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              gap: '24px',
-              flexWrap: 'wrap',
-            }}
-          >
+          {/* Col 1: Content */}
+          <div>
+            <p
+              className="label-text"
+              style={{
+                color: 'var(--dust)',
+                marginBottom: '16px',
+                letterSpacing: '0.12em',
+              }}
+            >
+              Content
+            </p>
             {[
-              { label: 'Diagnostic', href: '/diagnostic' },
-              { label: 'Guide', href: '/guide' },
-              { label: 'Comparison', href: '/comparison' },
-              { label: 'Tools', href: '/tools' },
+              { label: 'Diagnostics', href: '/diagnostic' },
+              { label: 'Guides', href: '/guide' },
+              { label: 'Comparisons', href: '/comparison' },
             ].map((link) => (
               <Link
                 key={link.href}
@@ -74,6 +76,8 @@ export function Footer() {
                 className="label-text"
                 style={{
                   color: 'var(--dust)',
+                  display: 'block',
+                  marginBottom: '10px',
                   transition: 'color 0.15s',
                 }}
               >
@@ -82,16 +86,64 @@ export function Footer() {
             ))}
           </div>
 
-          <p
-            style={{
-              fontFamily: 'var(--font-dm-mono, monospace)',
-              fontSize: '11px',
-              color: 'var(--dust)',
-              margin: 0,
-            }}
-          >
-            Some links earn commission – doesn&apos;t change the recommendation
-          </p>
+          {/* Col 2: Tools */}
+          <div>
+            <p
+              className="label-text"
+              style={{
+                color: 'var(--dust)',
+                marginBottom: '16px',
+                letterSpacing: '0.12em',
+              }}
+            >
+              Tools
+            </p>
+            <Link
+              href="/tools"
+              className="label-text"
+              style={{
+                color: 'var(--dust)',
+                display: 'block',
+                marginBottom: '10px',
+                transition: 'color 0.15s',
+              }}
+            >
+              All tools →
+            </Link>
+          </div>
+
+          {/* Col 3: More */}
+          <div>
+            <p
+              className="label-text"
+              style={{
+                color: 'var(--dust)',
+                marginBottom: '16px',
+                letterSpacing: '0.12em',
+              }}
+            >
+              More
+            </p>
+            {[
+              { label: 'About', href: '/about' },
+              { label: 'Affiliate disclosure', href: '/affiliate-disclosure' },
+              { label: 'Privacy', href: '/privacy' },
+            ].map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="label-text"
+                style={{
+                  color: 'var(--dust)',
+                  display: 'block',
+                  marginBottom: '10px',
+                  transition: 'color 0.15s',
+                }}
+              >
+                {link.label} →
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </footer>

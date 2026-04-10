@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
+
+async function requireAuth() {
+  const authClient = await createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  return user
+}
 
 // GET: Return active context doc + version history
 export async function GET() {
+  if (!await requireAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const supabase = createServiceClient()
 
   const [activeRes, historyRes] = await Promise.all([
@@ -30,6 +37,7 @@ export async function GET() {
 
 // PUT: Save new version
 export async function PUT(request: Request) {
+  if (!await requireAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const supabase = createServiceClient()
 
   try {

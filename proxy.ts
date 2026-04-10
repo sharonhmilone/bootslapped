@@ -1,55 +1,64 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
-  // Only protect /dashboard routes
-  if (!request.nextUrl.pathname.startsWith('/dashboard')) {
-    return NextResponse.next()
+  let supabaseResponse = NextResponse.next({ request })
+
+  // If env vars are missing, skip auth entirely so the site still loads.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('[proxy] NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is not set')
+    return supabaseResponse
   }
 
-  const response = NextResponse.next({
-    request: {
-      headers: request.headers,
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll()
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) =>
+          request.cookies.set(name, value)
+        )
+        supabaseResponse = NextResponse.next({ request })
+        cookiesToSet.forEach(({ name, value, options }) =>
+          supabaseResponse.cookies.set(name, value, options)
+        )
+      },
     },
   })
 
-  // Create Supabase client with cookie access
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value)
-            response.cookies.set(name, value, options)
-          })
-        },
-      },
-    }
-  )
+  // Refresh session — if this fails (network error etc.), fall through gracefully.
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch (err) {
+    console.error('[proxy] supabase.auth.getUser failed:', err)
+  }
 
-  // Refresh session — this keeps the cookie alive on every request
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { pathname } = request.nextUrl
 
-  if (!user) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
+  // Protect /dashboard routes — redirect to /login if not authenticated
+  if (pathname.startsWith('/dashboard') && !user) {
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/login'
     return NextResponse.redirect(loginUrl)
   }
 
-  return response
+  // Redirect authenticated users away from /login
+  if (pathname === '/login' && user) {
+    const dashboardUrl = request.nextUrl.clone()
+    dashboardUrl.pathname = '/dashboard'
+    return NextResponse.redirect(dashboardUrl)
+  }
+
+  return supabaseResponse
 }
 
 export const config = {
   matcher: [
-    // Match all dashboard routes except Next.js internals
-    '/dashboard/:path*',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

@@ -54,7 +54,7 @@ export function DiagnosticCtaBand() {
               marginBottom: '12px',
             }}
           >
-            Not sure where to start
+            Try this GPT · No email required
           </span>
           <h2
             className="font-heading"
@@ -62,29 +62,20 @@ export function DiagnosticCtaBand() {
               fontSize: 'clamp(32px, 7vw, 48px)',
               color: 'var(--bone)',
               lineHeight: 1.0,
-              margin: '0 0 24px',
+              margin: 0,
             }}
           >
-            Take the free diagnostic
+            It&apos;s time to fix your leaky funnel
           </h2>
-
-          {/* Mobile CTA */}
-          <Link
-            href="/diagnostic"
-            className="btn-inverse"
-            style={{ display: 'inline-block' }}
-          >
-            Take the diagnostic →
-          </Link>
         </div>
 
-        {/* Right: three steps + desktop CTA */}
+        {/* Right: three steps + single CTA */}
         <div>
           <div style={{ marginBottom: '32px' }}>
             {[
-              { n: '01', text: 'Answer five questions about your marketing' },
-              { n: '02', text: 'Get a specific diagnosis, not generic advice' },
-              { n: '03', text: 'See the fix — tools, copy, next steps' },
+              { n: '01', text: 'Find out where you sit on the growth curve' },
+              { n: '02', text: 'Learn which failure mode is blocking your business' },
+              { n: '03', text: 'Work through the specific fix in an interactive session' },
             ].map((step) => (
               <div
                 key={step.n}
@@ -121,13 +112,12 @@ export function DiagnosticCtaBand() {
             ))}
           </div>
 
-          {/* Desktop CTA */}
           <Link
             href="/diagnostic"
             className="btn-inverse"
             style={{ display: 'inline-block' }}
           >
-            Take the diagnostic →
+            Take the Diagnostic →
           </Link>
         </div>
       </div>

@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { analyzeDiff } from '@/lib/anthropic/analyze-diff'
 
+// Vercel Pro: 60s for Haiku diff analysis (short input/output, fast)
+export const maxDuration = 60
+
 export async function POST(request: Request) {
+  const authClient = await createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const supabase = createServiceClient()
 
   try {

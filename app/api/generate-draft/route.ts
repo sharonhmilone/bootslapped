@@ -3,7 +3,18 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { generateDraft } from '@/lib/anthropic/generate-draft'
 import { sendSlackNotification } from '@/lib/slack/notify'
 
+// Vercel Pro: Node.js runtime with 120s max duration.
+// Sonnet with a 28k token context doc needs up to 60s for a full draft.
+// 120s gives comfortable headroom without approaching Vercel Pro's 300s limit.
+export const maxDuration = 120
+
 export async function POST(request: Request) {
+  // Internal-only route — called by /api/decisions with CRON_SECRET
+  const authHeader = request.headers.get('Authorization')
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const supabase = createServiceClient()
 
   try {
@@ -53,11 +64,13 @@ export async function POST(request: Request) {
       revisionNote: revision_note,
     })
 
-    // 5. Update content item — only schema fields
+    // 5. Update content item — clear edited_draft_text so the new draft
+    // shows in the editor, not a previous round of edits.
     const { data: updatedItem, error: updateError } = await supabase
       .from('content_items')
       .update({
         draft_text: draftText,
+        edited_draft_text: null,
         status: 'draft_review',
         updated_at: new Date().toISOString(),
       })

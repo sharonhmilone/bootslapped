@@ -24,18 +24,33 @@ export async function generateBriefs(
 
   const message = await client.messages.create({
     model: MODELS.GENERATION,
-    max_tokens: 4096,
+    max_tokens: 8192,
     system: systemPrompt,
     messages: [
       {
         role: 'user',
-        content: `Generate ${count} distinct content briefs. Each brief must follow the brief template defined in the context document exactly. Every field is required. A brief missing any field is incomplete.
+        content: `Generate ${count} content brief${count === 1 ? '' : 's'}. Each brief must follow the brief template defined in the context document exactly. Every field is required. A brief missing any field is incomplete.
+
+Be concise within each section — every word must earn its place. Write to the depth the section genuinely requires, not to a word count target. Some sections will be short; others will need more detail. Never pad.
+
+FORMAT SELECTION — this is critical: Do not default to "diagnostic" for every brief. The three formats (diagnostic, guide, comparison) must be used in genuine rotation based on what serves the topic best. If generating multiple briefs, each must use a different format. If generating 1 brief, choose the format that genuinely fits — and actively avoid defaulting to diagnostic unless the topic specifically calls for it. Comparisons should be used for tool/approach decisions. Guides should be used for process or framework topics. Diagnostics for failure-mode identification.
+
+TOPIC DOMAIN — assign each brief to exactly one of these eight domains based on what the article is primarily about:
+- email: Email platforms, list building, sequences, deliverability, ESP decisions
+- crm: CRM tools, lead management, client ops, relationship workflows
+- bookkeeping: Accounting software, invoicing, financial ops, tax-adjacent tooling
+- website: Website builders, landing pages, web presence, conversion architecture
+- content: Content strategy, SEO, distribution, visibility, organic traffic
+- conversion: Funnel leaks, sales pages, CTAs, pricing, checkout friction
+- stack: Marketing ops, tool decisions, workflow systems, multi-tool architecture
+- ai-tools: AI-assisted marketing and operations, implementation-layer content
 
 Return as a JSON array with this structure for each brief:
 {
   "topic": "The specific topic or failure mode being addressed",
   "angle": "The specific editorial angle — what makes this Bootslapped-specific",
-  "format": "diagnostic | guide | comparison",
+  "format": "diagnostic or guide or comparison — one of these three exact strings, chosen intentionally",
+  "topic_domain": "one of the eight domain strings above — chosen based on primary subject matter",
   "target_audience": "Who specifically this is for and what stage they're at",
   "brief_text": "The full brief text following the template in the context document"
 }

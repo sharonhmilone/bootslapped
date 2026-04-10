@@ -44,19 +44,18 @@ export default function BriefReviewPage({ params }: PageProps) {
   const handleDecision = async (decision: Decision, note: string, tags: string[]) => {
     setIsSubmitting(true)
     try {
-      const response = await fetch('/api/decisions', {
+      await fetch('/api/decisions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ item_id: id, decision, note, tags }),
       })
-
-      if (response.ok) {
-        router.push('/dashboard')
-      }
     } catch (error) {
       console.error('Decision failed:', error)
     } finally {
       setIsSubmitting(false)
+      // Always navigate — server processed the decision even if browser
+      // dropped the response (e.g. extension interference)
+      router.push('/dashboard')
     }
   }
 

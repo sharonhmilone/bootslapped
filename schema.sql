@@ -42,6 +42,7 @@ create table if not exists content_items (
                     'brief_rejected',
                     'draft_pending',
                     'draft_review',
+                    'draft_rejected',
                     'revision_requested',
                     'ready_to_publish'
                   )),
@@ -201,10 +202,42 @@ drop policy if exists "Public read tool spotlights" on tool_spotlights;
 create policy "Public read tool spotlights"
   on tool_spotlights for select using (is_active = true);
 
+-- Public: only fully published content
 drop policy if exists "Public read published content" on content_items;
 create policy "Public read published content"
   on content_items for select
   using (status = 'ready_to_publish' and published_at is not null);
+
+-- Dashboard: authenticated editors can read all pipeline content
+drop policy if exists "Authenticated users read content_items" on content_items;
+create policy "Authenticated users read content_items"
+  on content_items for select
+  to authenticated
+  using (true);
+
+drop policy if exists "Authenticated users read editorial_examples" on editorial_examples;
+create policy "Authenticated users read editorial_examples"
+  on editorial_examples for select
+  to authenticated
+  using (true);
+
+drop policy if exists "Authenticated users read context_doc" on context_doc;
+create policy "Authenticated users read context_doc"
+  on context_doc for select
+  to authenticated
+  using (true);
+
+drop policy if exists "Authenticated users read context_doc_proposals" on context_doc_proposals;
+create policy "Authenticated users read context_doc_proposals"
+  on context_doc_proposals for select
+  to authenticated
+  using (true);
+
+drop policy if exists "Authenticated users read decision_tags" on decision_tags;
+create policy "Authenticated users read decision_tags"
+  on decision_tags for select
+  to authenticated
+  using (true);
 
 -- =============================================================
 -- SEED DATA: DECISION TAGS

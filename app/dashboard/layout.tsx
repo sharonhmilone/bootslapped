@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { LogoutButton } from './LogoutButton'
 
 export const metadata: Metadata = {
   title: {
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 const dashboardLinks = [
   { label: 'Pipeline', href: '/dashboard' },
   { label: 'Publish queue', href: '/dashboard/publish-queue' },
+  { label: 'Affiliates', href: '/dashboard/affiliate-programs' },
   { label: 'Context doc', href: '/dashboard/context-doc' },
   { label: 'Settings', href: '/dashboard/settings' },
 ]
@@ -91,16 +93,19 @@ export default async function DashboardLayout({
             ))}
           </div>
 
-          {/* User indicator */}
-          <span
-            style={{
-              fontFamily: 'var(--font-dm-mono, monospace)',
-              fontSize: '11px',
-              color: 'var(--ink-muted)',
-            }}
-          >
-            {user.email}
-          </span>
+          {/* User + logout */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-dm-mono, monospace)',
+                fontSize: '11px',
+                color: 'var(--ink-muted)',
+              }}
+            >
+              {user.email}
+            </span>
+            <LogoutButton />
+          </div>
         </nav>
       </header>
 

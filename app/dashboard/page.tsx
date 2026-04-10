@@ -22,7 +22,7 @@ export default function DashboardPage() {
     const { data } = await supabase
       .from('content_items')
       .select('*')
-      .not('status', 'in', '("brief_rejected")')
+      .not('status', 'in', '("brief_rejected","draft_rejected")')
       .order('created_at', { ascending: false })
       .limit(100)
 
@@ -43,20 +43,35 @@ export default function DashboardPage() {
     fetchItems()
   }, [])
 
+  // Auto-poll every 8s while any item is in a generating state
+  useEffect(() => {
+    const generatingStatuses = ['brief_approved', 'draft_pending', 'revision_requested']
+    const hasGenerating = items.some((i) => generatingStatuses.includes(i.status))
+    if (!hasGenerating) return
+    const interval = setInterval(fetchItems, 8000)
+    return () => clearInterval(interval)
+  }, [items])
+
   const handleGenerateBriefs = async () => {
     setIsGenerating(true)
+    const savedCount = typeof window !== 'undefined'
+      ? Number(localStorage.getItem('bootslapped:briefCount') ?? '1')
+      : 1
     try {
-      const response = await fetch('/api/generate-briefs', {
+      await fetch('/api/generate-briefs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ count: 3 }),
+        body: JSON.stringify({ count: savedCount }),
       })
-      if (response.ok) {
-        await fetchItems()
-      }
     } catch (error) {
-      console.error('Brief generation failed:', error)
+      // Browser extensions can drop the response even when the server
+      // succeeded — always refresh the board regardless so generated
+      // briefs appear without requiring a manual page reload.
+      console.error('[generate-briefs] fetch error (server may have succeeded):', error)
     } finally {
+      // Always refresh — server-side generation is independent of whether
+      // the browser successfully received the HTTP response.
+      await fetchItems()
       setIsGenerating(false)
     }
   }

@@ -93,17 +93,37 @@ export function DraftEditor({ initialText, onSave, isSaving }: DraftEditorProps)
         spellCheck={true}
       />
 
-      <p
+      <div
         style={{
-          fontFamily: 'var(--font-dm-mono, monospace)',
-          fontSize: '10px',
-          color: 'var(--ink-muted)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           marginTop: '8px',
         }}
       >
-        {text.trim().split(/\s+/).filter(Boolean).length} words
-        {isDirty && ' · Save to run diff analysis and update learning pool'}
-      </p>
+        <p
+          style={{
+            fontFamily: 'var(--font-dm-mono, monospace)',
+            fontSize: '10px',
+            color: 'var(--ink-muted)',
+            margin: 0,
+          }}
+        >
+          {text.trim().split(/\s+/).filter(Boolean).length} words
+          {isDirty && ' · Save to run diff analysis and update learning pool'}
+        </p>
+
+        {isDirty && (
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="btn-approve"
+            style={{ fontSize: '10px', padding: '5px 12px', opacity: isSaving ? 0.6 : 1 }}
+          >
+            {isSaving ? 'Saving...' : 'Save edits →'}
+          </button>
+        )}
+      </div>
     </div>
   )
 }

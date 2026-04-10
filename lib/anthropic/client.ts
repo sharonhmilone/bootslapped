@@ -12,10 +12,10 @@ export function getAnthropicClient(): Anthropic {
   return _client
 }
 
-// Model constants
+// Model constants — Vercel Pro, Node.js runtime
 export const MODELS = {
-  // Primary generation — briefs, drafts, context doc proposals
+  // All generation: briefs, drafts, context doc proposals
   GENERATION: 'claude-sonnet-4-6',
-  // Lightweight tasks — diff analysis, classification
-  ANALYSIS: 'claude-haiku-4-5-20251001',
+  // Lightweight tasks: diff analysis, pattern extraction
+  ANALYSIS: 'claude-haiku-4-5',
 } as const

@@ -13,7 +13,10 @@ function getDaysOld(dateStr: string): number {
 }
 
 function getDetailHref(item: ContentItem): string {
-  if (['brief_pending', 'brief_approved', 'brief_rejected'].includes(item.status)) {
+  // brief_pending and brief_rejected → brief review page
+  // brief_approved, draft_pending, and all draft statuses → draft page
+  // (brief_approved items are generating — draft page has the manual trigger button)
+  if (item.status === 'brief_pending' || item.status === 'brief_rejected') {
     return `/dashboard/briefs/${item.id}`
   }
   return `/dashboard/drafts/${item.id}`
@@ -22,6 +25,8 @@ function getDetailHref(item: ContentItem): string {
 export function ContentCard({ item }: ContentCardProps) {
   const daysOld = getDaysOld(item.updated_at)
   const isStale = daysOld >= 5
+  const isGenerating = item.status === 'brief_approved' || item.status === 'draft_pending'
+  const isLive = item.status === 'ready_to_publish' && !!item.published_at
   const href = getDetailHref(item)
 
   return (
@@ -34,6 +39,7 @@ export function ContentCard({ item }: ContentCardProps) {
         padding: '16px',
         textDecoration: 'none',
         transition: 'border-color 0.15s',
+        opacity: isGenerating ? 0.65 : 1,
       }}
     >
       {/* Top row: format tag + status badge */}
@@ -56,7 +62,17 @@ export function ContentCard({ item }: ContentCardProps) {
         >
           {item.format ?? 'TBD'}
         </span>
-        <StatusBadge status={item.status} />
+        {isGenerating ? (
+          <span style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '10px', color: 'var(--ink-muted)', letterSpacing: '0.08em' }}>
+            Generating draft...
+          </span>
+        ) : isLive ? (
+          <span style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '10px', color: '#4A9B8E', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            ● Live
+          </span>
+        ) : (
+          <StatusBadge status={item.status} />
+        )}
       </div>
 
       {/* Topic / title */}

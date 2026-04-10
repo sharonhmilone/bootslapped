@@ -12,7 +12,8 @@ interface PipelineBoardProps {
 
 const PIPELINE_COLUMNS: Array<{ label: string; statuses: ContentStatus[] }> = [
   { label: 'Brief review', statuses: ['brief_pending'] },
-  { label: 'Draft review', statuses: ['draft_review', 'revision_requested'] },
+  // brief_approved and draft_pending are transitional — draft is generating
+  { label: 'Draft review', statuses: ['brief_approved', 'draft_pending', 'draft_review', 'revision_requested'] },
   { label: 'Ready to publish', statuses: ['ready_to_publish'] },
 ]
 
@@ -77,7 +78,7 @@ export function PipelineBoard({
           className="btn-approve"
           style={{ opacity: isGenerating ? 0.6 : 1 }}
         >
-          {isGenerating ? 'Generating...' : 'Generate briefs →'}
+          {isGenerating ? 'Generating...' : 'Generate brief →'}
         </button>
       </div>
 
@@ -125,6 +126,13 @@ export function PipelineBoard({
                   {colItems.length}
                 </span>
               </div>
+
+                {/* Live count for ready_to_publish column */}
+              {col.statuses.includes('ready_to_publish') && (
+                <p style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '10px', color: '#4A9B8E', margin: '0 0 12px', letterSpacing: '0.08em' }}>
+                  {colItems.filter(i => !!i.published_at).length} live
+                </p>
+              )}
 
               {/* Cards */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

@@ -5,13 +5,14 @@ interface StatusBadgeProps {
 }
 
 const STATUS_CONFIG: Record<ContentStatus, { label: string; color: string; bg: string }> = {
-  brief_pending:    { label: 'BRIEF PENDING',   color: '#9E9893', bg: 'rgba(158,152,147,0.1)' },
-  brief_approved:   { label: 'BRIEF APPROVED',  color: '#4A9B8E', bg: 'rgba(74,155,142,0.1)' },
-  brief_rejected:   { label: 'BRIEF REJECTED',  color: '#C45C44', bg: 'rgba(196,92,68,0.1)' },
-  draft_pending:    { label: 'DRAFT PENDING',   color: '#9E9893', bg: 'rgba(158,152,147,0.1)' },
-  draft_review:     { label: 'DRAFT REVIEW',    color: '#C45C44', bg: 'rgba(196,92,68,0.08)' },
-  revision_requested: { label: 'REVISION',      color: '#D96B51', bg: 'rgba(217,107,81,0.1)' },
-  ready_to_publish: { label: 'READY',           color: '#4A9B8E', bg: 'rgba(74,155,142,0.15)' },
+  brief_pending:      { label: 'BRIEF PENDING',   color: '#9E9893', bg: 'rgba(158,152,147,0.1)' },
+  brief_approved:     { label: 'BRIEF APPROVED',  color: '#4A9B8E', bg: 'rgba(74,155,142,0.1)' },
+  brief_rejected:     { label: 'BRIEF REJECTED',  color: '#C45C44', bg: 'rgba(196,92,68,0.1)' },
+  draft_pending:      { label: 'DRAFT PENDING',   color: '#9E9893', bg: 'rgba(158,152,147,0.1)' },
+  draft_review:       { label: 'DRAFT REVIEW',    color: '#C45C44', bg: 'rgba(196,92,68,0.08)' },
+  draft_rejected:     { label: 'DRAFT REJECTED',  color: '#C45C44', bg: 'rgba(196,92,68,0.1)' },
+  revision_requested: { label: 'REVISION',        color: '#D96B51', bg: 'rgba(217,107,81,0.1)' },
+  ready_to_publish:   { label: 'READY',           color: '#4A9B8E', bg: 'rgba(74,155,142,0.15)' },
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {

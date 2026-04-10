@@ -13,6 +13,8 @@ export interface PromptParts {
 export function buildBriefGenerationPrompt(parts: PromptParts): string {
   const { contextDoc, approvedExamples, rejectedExamples } = parts
 
+  const docContent = contextDoc.content
+
   const approvedBlock =
     approvedExamples.length > 0
       ? approvedExamples
@@ -36,7 +38,7 @@ export function buildBriefGenerationPrompt(parts: PromptParts): string {
   return `You are an editorial AI for Bootslapped — a content resource for bootstrapped founders. Your job is to generate content briefs that meet the editorial standard defined in the context document below.
 
 CONTEXT DOCUMENT (version ${contextDoc.version}):
-${contextDoc.content}
+${docContent}
 
 APPROVED BRIEF EXAMPLES (what works):
 ${approvedBlock}
@@ -45,18 +47,25 @@ REJECTED BRIEF EXAMPLES (what to avoid):
 ${rejectedBlock}`
 }
 
+// No context doc limit on Pro — full doc sent to Sonnet.
+// Sonnet's context window is 200k tokens; the full editorial doc is ~12,500 tokens.
+// After a few runs, check console.anthropic.com to confirm actual input token
+// counts and cost per generation.
+
 /**
  * Assembles the draft generation system prompt.
  */
 export function buildDraftGenerationPrompt(parts: PromptParts): string {
   const { contextDoc, approvedExamples } = parts
 
+  const docContent = contextDoc.content
+
   const approvedBlock =
     approvedExamples.length > 0
       ? approvedExamples
           .map(
             (ex, i) =>
-              `EXAMPLE ${i + 1} (approved draft${ex.decision_note ? ` — note: "${ex.decision_note}"` : ''}):\n${ex.content_text.slice(0, 1500)}${ex.content_text.length > 1500 ? '...' : ''}`
+              `EXAMPLE ${i + 1} (approved draft${ex.decision_note ? ` — note: "${ex.decision_note}"` : ''}):\n${ex.content_text}`
           )
           .join('\n\n---\n\n')
       : 'No approved draft examples yet. Write strictly according to the context document standard.'
@@ -64,7 +73,7 @@ export function buildDraftGenerationPrompt(parts: PromptParts): string {
   return `You are a writer for Bootslapped. Write to the editorial standard in the context document. Be specific, opinionated, and useful. No hedging, no padding.
 
 CONTEXT DOCUMENT (version ${contextDoc.version}):
-${contextDoc.content}
+${docContent}
 
 APPROVED DRAFT EXAMPLES (match this quality and voice):
 ${approvedBlock}`
