@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 const dashboardLinks = [
   { label: 'Pipeline', href: '/dashboard' },
   { label: 'Publish queue', href: '/dashboard/publish-queue' },
+  { label: 'Affiliates', href: '/dashboard/affiliate-programs' },
   { label: 'Context doc', href: '/dashboard/context-doc' },
   { label: 'Settings', href: '/dashboard/settings' },
 ]

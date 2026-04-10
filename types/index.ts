@@ -225,6 +225,27 @@ export interface StaleItem {
   daysStalled: number
 }
 
+// ---- Affiliate program types ----
+
+export type CommissionType = 'percentage' | 'flat' | 'recurring'
+export type EnrollmentStatus = 'not_enrolled' | 'applied' | 'active' | 'paused'
+
+export interface AffiliateProgram {
+  id: string
+  created_at: string
+  updated_at: string
+  program_name: string
+  tool_id: string | null
+  topic_domain: TopicDomain
+  commission_type: CommissionType
+  commission_rate: string | null  // freeform label e.g. "30%" or "$25/referral"
+  signup_url: string | null
+  enrollment_status: EnrollmentStatus
+  notes: string | null
+  // Joined
+  tool?: Tool | null
+}
+
 // ---- Slack notification types ----
 
 export type SlackEventType =
