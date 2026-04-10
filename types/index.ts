@@ -220,6 +220,8 @@ export type SlackEventType =
   | 'draft_ready'
   | 'item_stalled'
   | 'context_doc_proposal'
+  | 'article_published'
+  | 'article_unpublished'
 
 export interface SlackNotificationPayload {
   event: SlackEventType

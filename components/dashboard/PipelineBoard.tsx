@@ -127,6 +127,13 @@ export function PipelineBoard({
                 </span>
               </div>
 
+                {/* Live count for ready_to_publish column */}
+              {col.statuses.includes('ready_to_publish') && (
+                <p style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '10px', color: '#4A9B8E', margin: '0 0 12px', letterSpacing: '0.08em' }}>
+                  {colItems.filter(i => !!i.published_at).length} live
+                </p>
+              )}
+
               {/* Cards */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {colItems.length === 0 ? (

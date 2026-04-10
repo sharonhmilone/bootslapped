@@ -49,6 +49,12 @@ function buildMessage(options: NotifyOptions): string {
     case 'context_doc_proposal':
       return `New editorial pattern detected. Proposed update to context doc ready for review.`
 
+    case 'article_published':
+      return `Published: ${options.topic ?? 'untitled'} is now live.`
+
+    case 'article_unpublished':
+      return `Unpublished: ${options.topic ?? 'untitled'} has been taken offline.`
+
     default:
       return `Bootslapped system notification`
   }
