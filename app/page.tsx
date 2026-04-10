@@ -113,7 +113,7 @@ export default async function HomePage() {
                 {articles.slice(0, 3).map((article) => (
                   <a
                     key={article.id}
-                    href={`/${article.format}/${article.slug}`}
+                    href={article.topic_domain ? `/${article.format}/${article.topic_domain}/${article.slug}` : `/${article.format}/${article.slug}`}
                     className="hero-aside-link"
                   >
                     <span className="label-text" style={{ color: 'var(--brick)', display: 'block', marginBottom: '4px' }}>
@@ -183,7 +183,7 @@ export default async function HomePage() {
                   title={article.topic}
                   description={article.angle}
                   topic={FORMAT_LABELS[article.format]}
-                  href={`/${article.format}/${article.slug}`}
+                  href={article.topic_domain ? `/${article.format}/${article.topic_domain}/${article.slug}` : `/${article.format}/${article.slug}`}
                 />
               ))}
             </div>

@@ -4,6 +4,7 @@ import type { ArticleFormat } from '@/types'
 interface RelatedArticle {
   slug: string
   category: ArticleFormat
+  domain: string
   title: string
   description: string
   topic: string
@@ -47,7 +48,7 @@ export function RelatedArticles({ articles }: RelatedArticlesProps) {
         {articles.slice(0, 3).map((article) => (
           <Link
             key={article.slug}
-            href={`/${article.category}/${article.slug}`}
+            href={`/${article.category}/${article.domain}/${article.slug}`}
             style={{
               display: 'grid',
               gridTemplateColumns: '100px 1fr',

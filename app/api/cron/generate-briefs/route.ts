@@ -76,6 +76,7 @@ export async function GET(request: Request) {
       topic: brief.topic,
       angle: brief.angle,
       format: brief.format,
+      topic_domain: brief.topic_domain ?? null,
       target_audience: brief.target_audience,
       brief_text: brief.brief_text,
       status: 'brief_pending',

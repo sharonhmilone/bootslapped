@@ -50,6 +50,22 @@ export function BriefDetail({ item }: BriefDetailProps) {
               {item.format}
             </span>
           )}
+          {item.topic_domain && (
+            <span
+              style={{
+                fontFamily: 'var(--font-dm-mono, monospace)',
+                fontSize: '10px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                color: 'var(--ink-muted)',
+                display: 'block',
+                marginBottom: '4px',
+              }}
+              title="AI-suggested domain — confirmed at draft approval"
+            >
+              {item.topic_domain}
+            </span>
+          )}
           {item.brief_text && (
             <span
               style={{

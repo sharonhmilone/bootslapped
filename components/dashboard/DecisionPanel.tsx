@@ -1,14 +1,28 @@
 'use client'
 
 import { useState } from 'react'
+import type { TopicDomain } from '@/types'
+
 type Decision = 'approved' | 'rejected' | 'revision_requested'
+
+const TOPIC_DOMAINS: { value: TopicDomain; label: string }[] = [
+  { value: 'email',      label: 'Email' },
+  { value: 'crm',        label: 'CRM' },
+  { value: 'bookkeeping', label: 'Bookkeeping' },
+  { value: 'website',    label: 'Website' },
+  { value: 'content',    label: 'Content' },
+  { value: 'conversion', label: 'Conversion' },
+  { value: 'stack',      label: 'Stack' },
+  { value: 'ai-tools',   label: 'AI Tools' },
+]
 
 interface DecisionPanelProps {
   itemId: string
   decisionType: 'brief' | 'draft'
   decisionTags: Array<{ label: string }>
-  onDecision: (decision: Decision, note: string, tags: string[]) => Promise<void>
+  onDecision: (decision: Decision, note: string, tags: string[], domain?: TopicDomain) => Promise<void>
   isSubmitting: boolean
+  existingDomain?: TopicDomain | null
 }
 
 export function DecisionPanel({
@@ -17,10 +31,12 @@ export function DecisionPanel({
   decisionTags,
   onDecision,
   isSubmitting,
+  existingDomain,
 }: DecisionPanelProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [note, setNote] = useState('')
   const [pendingDecision, setPendingDecision] = useState<Decision | null>(null)
+  const [selectedDomain, setSelectedDomain] = useState<TopicDomain | ''>(existingDomain ?? '')
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
@@ -30,9 +46,11 @@ export function DecisionPanel({
 
   const handleDecision = async (decision: Decision) => {
     setPendingDecision(decision)
-    await onDecision(decision, note, selectedTags)
+    await onDecision(decision, note, selectedTags, selectedDomain || undefined)
     setPendingDecision(null)
   }
+
+  const approveBlocked = decisionType === 'draft' && !selectedDomain
 
   return (
     <div
@@ -141,13 +159,55 @@ export function DecisionPanel({
           />
         </div>
 
+        {/* Domain selector — required for draft approval, locked at this stage */}
+        {decisionType === 'draft' && (
+          <div style={{ marginBottom: '16px' }}>
+            <label
+              style={{
+                fontFamily: 'var(--font-dm-mono, monospace)',
+                fontSize: '10px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                color: 'var(--ink-muted)',
+                display: 'block',
+                marginBottom: '6px',
+              }}
+            >
+              Topic domain <span style={{ color: 'var(--brick)' }}>*</span>
+            </label>
+            <select
+              value={selectedDomain}
+              onChange={(e) => setSelectedDomain(e.target.value as TopicDomain | '')}
+              style={{
+                width: '100%',
+                backgroundColor: 'var(--surface-alt)',
+                border: `1px solid ${!selectedDomain ? 'var(--brick)' : 'var(--rule)'}`,
+                color: selectedDomain ? 'var(--ink)' : 'var(--ink-muted)',
+                fontFamily: 'var(--font-dm-mono, monospace)',
+                fontSize: '13px',
+                padding: '8px 10px',
+              }}
+            >
+              <option value="">Select domain to approve…</option>
+              {TOPIC_DOMAINS.map(({ value, label }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+            {!selectedDomain && (
+              <p style={{ fontFamily: 'var(--font-dm-mono, monospace)', fontSize: '11px', color: 'var(--brick)', marginTop: '4px' }}>
+                Domain required before approving
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Action buttons */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button
             onClick={() => handleDecision('approved')}
-            disabled={isSubmitting}
+            disabled={isSubmitting || approveBlocked}
             className="btn-approve"
-            style={{ opacity: isSubmitting && pendingDecision === 'approved' ? 0.6 : 1 }}
+            style={{ opacity: (isSubmitting && pendingDecision === 'approved') || approveBlocked ? 0.4 : 1, cursor: approveBlocked ? 'not-allowed' : 'pointer' }}
           >
             Approve →
           </button>

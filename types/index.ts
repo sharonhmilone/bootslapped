@@ -19,6 +19,18 @@ export type ContentStatus =
 
 export type ArticleFormat = 'diagnostic' | 'guide' | 'comparison'
 
+// Eight locked topic domains — set by editor at draft approval, enforced by DB CHECK constraint.
+// AI suggests at brief generation; human confirms before publishing.
+export type TopicDomain =
+  | 'email'
+  | 'crm'
+  | 'bookkeeping'
+  | 'website'
+  | 'content'
+  | 'conversion'
+  | 'stack'
+  | 'ai-tools'
+
 export type ProposalStatus = 'pending' | 'approved' | 'rejected'
 
 // ---- Database row types (mirrors schema.sql exactly) ----
@@ -31,6 +43,7 @@ export interface ContentItem {
   // Pipeline
   status: ContentStatus
   format: ArticleFormat
+  topic_domain: TopicDomain | null  // null until confirmed at draft approval
 
   // Brief fields
   topic: string
@@ -236,6 +249,7 @@ export interface GeneratedBrief {
   topic: string
   angle: string
   format: ArticleFormat
+  topic_domain: TopicDomain  // AI suggestion — editor confirms at draft approval
   target_audience: string
   brief_text: string
 }

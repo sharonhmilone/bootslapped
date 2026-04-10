@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { item_id, decision, note, tags } = body
+    const { item_id, decision, note, tags, topic_domain } = body
 
     if (!item_id || !decision) {
       return NextResponse.json({ error: 'item_id and decision are required' }, { status: 400 })
@@ -65,6 +65,11 @@ export async function POST(request: Request) {
       decision_tags: tags ?? null,
       decided_at: now,
       updated_at: now,
+    }
+
+    // Lock topic_domain on draft approval
+    if (stage === 'draft' && decision === 'approved' && topic_domain) {
+      updatePayload.topic_domain = topic_domain
     }
 
     if (stage === 'brief' && decision === 'approved' && !item.slug) {

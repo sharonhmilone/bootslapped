@@ -129,13 +129,13 @@ export default function DraftReviewPage({ params }: PageProps) {
     }
   }
 
-  const handleDecision = async (decision: Decision, note: string, tags: string[]) => {
+  const handleDecision = async (decision: Decision, note: string, tags: string[], domain?: import('@/types').TopicDomain) => {
     setIsSubmitting(true)
     try {
       await fetch('/api/decisions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ item_id: id, decision, note, tags }),
+        body: JSON.stringify({ item_id: id, decision, note, tags, topic_domain: domain ?? null }),
       })
     } catch (error) {
       console.error('Decision failed:', error)
@@ -205,7 +205,9 @@ export default function DraftReviewPage({ params }: PageProps) {
   if (item.status === 'ready_to_publish') {
     const isLive = !!item.published_at
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.bootslapped.com'
-    const liveUrl = item.slug ? `${appUrl}/${item.format}/${item.slug}` : null
+    const liveUrl = item.slug && item.topic_domain
+      ? `${appUrl}/${item.format}/${item.topic_domain}/${item.slug}`
+      : item.slug ? `${appUrl}/${item.format}/${item.slug}` : null
 
     return (
       <div>
@@ -401,6 +403,7 @@ export default function DraftReviewPage({ params }: PageProps) {
             decisionTags={DRAFT_TAGS.map((label) => ({ label }))}
             onDecision={handleDecision}
             isSubmitting={isSubmitting}
+            existingDomain={item.topic_domain}
           />
         </div>
       </div>
